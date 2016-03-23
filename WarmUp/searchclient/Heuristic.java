@@ -14,7 +14,30 @@ public abstract class Heuristic implements Comparator< Node > {
 	}
 
 	public int h( Node n ) {
-		return 0;
+		int h = 0;
+		outerloop:
+		for (int row = 1; row < n.MAX_ROW-1 ; row++ ) {
+			for (int col = 1 ; col< n.MAX_COLUMN-1 ; col++ ) {
+				char chr = n.boxes[row][col];
+				if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
+					for (point p : SearchClient.goalsAsPoints){
+						if (p.a == Character.toLowerCase(chr)){
+							h += euclidean(p,row,col);
+						}
+					}
+				}
+			}			
+		}
+		// System.err.println("Heuristics: " + he);
+		return h;
+	}
+
+	public int euclidean(int x1, int y1, int x2, int y2){
+		return (int)Math.sqrt(Math.pow((x1-x2),2)+Math.pow((y1-y2),2));
+	}
+	public int euclidean(point p, int x, int y){
+		// System.err.println("Point: " + p.x + ", " + p.y);
+		return (int)Math.sqrt(Math.pow((p.x-x),2)+Math.pow((p.y-y),2));
 	}
 
 	public abstract int f( Node n );

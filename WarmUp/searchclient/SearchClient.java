@@ -1,8 +1,10 @@
 package searchclient;
 
+import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -12,6 +14,12 @@ import searchclient.Strategy.*;
 import searchclient.Node;
 
 public class SearchClient {
+
+	public static boolean[][] walls = new boolean[70][70];
+	public static char[][] goals = new char[70][70];
+	public static ArrayList<point> goalsAsPoints = new ArrayList<>();
+	public point point;
+
 	// Auxiliary static classes
 	public static void error( String msg ) throws Exception {
 		throw new Exception( "GSCError: " + msg );
@@ -72,14 +80,16 @@ public class SearchClient {
 		if ( colorLines > 0 ) {
 			error( "Box colors not supported" );
 		}
-		
+
+		Node.MAX_COLUMN = line.length();
 		initialState = new Node( null );
 
+		// Read lines specifying the initial state of the maze
 		while ( !line.equals( "" ) ) {
 			for ( int i = 0; i < line.length(); i++ ) {
 				char chr = line.charAt( i );
 				if ( '+' == chr ) { // Walls
-					initialState.walls[levelLines][i] = true;
+					this.walls[levelLines][i] = true;
 				} else if ( '0' <= chr && chr <= '9' ) { // Agents
 					if ( agentCol != -1 || agentRow != -1 ) {
 						error( "Not a single agent level" );
@@ -88,13 +98,19 @@ public class SearchClient {
 					initialState.agentCol = i;
 				} else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
 					initialState.boxes[levelLines][i] = chr;
+					// point = new point(levelLines, i, chr);
+					// initialState.listOfBoxes.add(point);
 				} else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
-					initialState.goals[levelLines][i] = chr;
+					this.goals[levelLines][i] = chr;
+					point = new point(levelLines, i, chr);
+					goalsAsPoints.add(point);
 				}
 			}
 			line = serverMessages.readLine();
 			levelLines++;
 		}
+		initialState.MAX_ROW = levelLines;
+		Node.MAX_ROW = levelLines;
 	}
 
 	public LinkedList< Node > Search( Strategy strategy ) throws IOException {
@@ -145,10 +161,32 @@ public class SearchClient {
 		SearchClient client = new SearchClient( serverMessages );
 
 		Strategy strategy = null;
-		strategy = new StrategyBFS();
+		// Ex 1: 
+		if (args[0].equals("BFS")) {
+			strategy = new StrategyBFS();
+		}
+		// Ex 2:
+		else if(args[0].equals("DFS")){
+			strategy = new StrategyDFS();
+		}
+		// Ex 3:
+		else if(args[0].equals("AStar")){
+			strategy = new StrategyBestFirst( new AStar( client.initialState));
+		}
+		else if(args[0].equals("WAStar")){
+			strategy = new StrategyBestFirst( new WeightedAStar( client.initialState));
+		}
+		else if(args[0].equals("Greedy")){
+			strategy = new StrategyBestFirst( new Greedy( client.initialState));
+		}
+		else {
+			System.err.println("Unable to recognize strategy");
+			System.exit( 0 );
+		}
+		//Ex 3:
 		// Ex 1:
-		//strategy = new StrategyDFS();
-		
+		// strategy = new StrategyDFS();
+
 		// Ex 3:
 		//strategy = new StrategyBestFirst( new AStar( client.initialState ) );
 		//strategy = new StrategyBestFirst( new WeightedAStar( client.initialState ) );

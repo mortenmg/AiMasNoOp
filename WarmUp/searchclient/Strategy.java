@@ -2,6 +2,8 @@ package searchclient;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 import searchclient.SearchClient.Memory;
 import searchclient.Node;
@@ -82,33 +84,34 @@ public abstract class Strategy {
 	}
 
 	public static class StrategyDFS extends Strategy {
+		private ArrayDeque<Node> frontier;
+		
 		public StrategyDFS() {
 			super();
-			// Unimplemented			
+			frontier = new ArrayDeque<Node>();			
 		}
 
 		public Node getAndRemoveLeaf() {
-			// Unimplemented
-			return null;
+			return frontier.pollLast();
 		}
 
 		public void addToFrontier( Node n ) {
-			// Unimplemented
+			frontier.addLast(n);
 		}
 
 		public int countFrontier() {
-			// Unimplemented
-			return 0;
+			
+			return frontier.size();
 		}
 
 		public boolean frontierIsEmpty() {
-			// Unimplemented
-			return true;
+			
+			return frontier.isEmpty();
 		}
 
 		public boolean inFrontier( Node n ) {
-			// Unimplemented
-			return false;
+			
+			return frontier.contains(n);
 		}
 
 		public String toString() {
@@ -118,34 +121,34 @@ public abstract class Strategy {
 
 	// Ex 3: Best-first Search uses a priority queue (Java contains no implementation of a Heap data structure)
 	public static class StrategyBestFirst extends Strategy {
+		private PriorityQueue<Node> frontier;
 		private Heuristic heuristic;
 		public StrategyBestFirst( Heuristic h ) {
 			super();
 			heuristic = h;
+			frontier = new PriorityQueue<Node>(10,heuristic);
 			// Unimplemented
 		}
 		public Node getAndRemoveLeaf() {
-			// Unimplemented
-			return null;
+			return frontier.poll();
 		}
 
 		public void addToFrontier( Node n ) {
-			// Unimplemented
+			frontier.add(n);
 		}
 
 		public int countFrontier() {
-			// Unimplemented
-			return 0;
+			return frontier.size();
 		}
 
 		public boolean frontierIsEmpty() {
-			// Unimplemented
-			return true;
+			if(frontier.peek() == null)
+				return true;
+			else return false;
 		}
 
 		public boolean inFrontier( Node n ) {
-			// Unimplemented
-			return false;
+			return frontier.contains(n);
 		}
 
 		public String toString() {
