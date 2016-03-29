@@ -16,11 +16,11 @@ javac searchclient/*.java
 
 to run the warmup program
 ```
-java -jar server.jar -l levels/<level>.lvl -g 50 -c "java searchclient.Searchclient <algorithm>
+java -jar server.jar -l levels/<level>.lvl -g 50 -c "java searchclient.SearchClient <algorithm>
 ```
 example run:
 ```
-java -jar server.jar -l levels/firefly.lvl -g 50 -c "java searchclient.Searchclient AStar"
+java -jar server.jar -l levels/firefly.lvl -g 50 -c "java searchclient.SearchClient AStar"
 ```
 
 Algorighms: "AStar", "WAStar", "Greedy", "DFS", BFS"
