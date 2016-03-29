@@ -10,17 +10,17 @@ Open a command promt and navigate to the location chosen for the project (cd ...
 
 To compile the warmup project go to .../aimas/warmup
 ```
-"javac sampleclients/*.java"
-"javac searchclient/*.java"
+javac sampleclients/*.java
+javac searchclient/*.java
 ```
 
 to run the warmup program
 ```
-"java -jar server.jar -l levels/<level>.lvl -g 50 -c "java searchclient.Searchclient <algorithm>"
+java -jar server.jar -l levels/<level>.lvl -g 50 -c "java searchclient.Searchclient <algorithm>
 ```
 example run:
 ```
-"java -jar server.jar -l levels/firefly.lvl -g 50 -c "java searchclient.Searchclient AStar"
+java -jar server.jar -l levels/firefly.lvl -g 50 -c "java searchclient.Searchclient AStar"
 ```
 
 Algorighms: "AStar", "WAStar", "Greedy", "DFS", BFS"
