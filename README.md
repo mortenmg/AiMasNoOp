@@ -3,12 +3,12 @@
 Warmup assignment code is provided as a playground for using the GitHub platform
 codes for running the warmup environment.
 
-The code for the project should be in the root folder ```.../aimasnoop/main.java etc.```
+The code for the project should be in the root folder ```.../aimasnoop/src/<name>.java etc.```
 
 # How to compile and run from github:
 Open a command promt and navigate to the location chosen for the project (cd .../aimasnoop)
 
-To compile the warmup project go to .../aimas/warmup
+To compile the warmup project go to .../aimasnoop/warmup
 ```
 javac sampleclients/*.java
 javac searchclient/*.java
