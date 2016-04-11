@@ -27,3 +27,22 @@ Algorighms: "AStar", "WAStar", "Greedy", "DFS", BFS"
 Levels:  crunch, custom, firefly, friendofbfs, friendofdfs, sad1, sad2
 
 Remember to recompile every time you update the code from GitHub before you run it.
+
+# Setup in IntelliJ IDEA
+Create a new "JAR Application" run configuration with the following setup:
+
+JAR path:
+```
+../AiMasNoOp/server.jar
+```
+Program arguments:
+```
+-l "../AiMasNoOp/WarmUp/levels/SAD1.lvl" -g 50 -c "java Supervisor"
+```
+
+Working directory:
+```
+../AiMasNoOp/out/production/AiMasNoOp
+```
+Finally setup the correct project structure in File -> Project Structure.
+Ensure that only the "src" is marked as a "Sources" folder.
