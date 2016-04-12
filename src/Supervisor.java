@@ -80,7 +80,8 @@ public class Supervisor {
         Preprocessor p = new Preprocessor(serverMessages);
 
         try {
-            agents = p.readMap();
+            p.readMap();
+            agents = p.getAgents();
         } catch (IOException e) {
             e.printStackTrace();
         }
