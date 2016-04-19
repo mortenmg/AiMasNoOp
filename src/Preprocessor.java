@@ -110,9 +110,6 @@ public class Preprocessor {
 
                 //If cell is empty, analyse
                 else if(isCorridor(i,j)){
-
-//                    walls[i][j] = 'c';
-
                     if(assignId(i,j,id)){
                         id++;
                     }
