@@ -10,14 +10,14 @@ import java.util.List;
 public class Preprocessor {
     private BufferedReader serverMessages;
     private char[][] walls = new char[70][70]; //2D Array of walls
-    private char[][] goals = new char[70][70]; //2D array of goals
+//    private char[][] goals = new char[70][70]; //2D array of goals
+    private HashMap<Point,Character> goals = new HashMap<Point,Character>();
     private char[][] boxes = new char[70][70]; //2D array of goals
     private List< Agent > agents = new ArrayList< Agent >();
 
     //Testing arrays for making goal lists unprioritized at first
     private ArrayList<Point> goalPoints = new ArrayList<Point>();
     private ArrayList<Point> boxPoints = new ArrayList<Point>();
-
 
     public Preprocessor(BufferedReader serverMessages) {
         this.serverMessages = serverMessages;
@@ -39,8 +39,6 @@ public class Preprocessor {
                 colors.put( id.charAt( 0 ), color );
         }
 
-
-
         // Read lines specifying level layout
         while ( !line.equals( "" ) ) {
             for (int i = 0; i < line.length(); i++) {
@@ -50,7 +48,7 @@ public class Preprocessor {
                 else if (id == '+') //If wall
                     walls[levelLine][i] = id;
                 else if ('a' <= id && id <= 'z' ){ //If goal
-                    goals[levelLine][i] = id;
+                    goals.put(new Point(levelLine,i),id);
                     goalPoints.add(new Point(levelLine,i));
                 }
                 else if ('A' <= id && id <= 'Z'){ //If boxes
@@ -73,7 +71,7 @@ public class Preprocessor {
         //Loop through goals and find a box for each goal
         for (Point g : goalPoints) {
             for (Point b : boxPoints) {
-                char goal = goals[g.x][g.y];
+                char goal = goals.get(g);
                 char box = Character.toLowerCase(boxes[b.x][b.y]);
                 if (goal == box){
                     goalTasks.add(new GoalTask()); //TODO add arguments to fit goalTask class
