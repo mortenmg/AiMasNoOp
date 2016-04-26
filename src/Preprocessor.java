@@ -9,10 +9,15 @@ import java.util.List;
  */
 public class Preprocessor {
     private BufferedReader serverMessages;
-    private char[][] walls = new char[70][70]; //2D Array of walls
+    int mapHeight = 0;
+    int mapWidth = 0;
+    private char[][] walls;
+    private char[][] boxes;
+
+//    private char[][] walls = new char[70][70]; //2D Array of walls
 //    private char[][] goals = new char[70][70]; //2D array of goals
     private HashMap<Point,Character> goals = new HashMap<Point,Character>();
-    private char[][] boxes = new char[70][70]; //2D array of goals
+//    private char[][] boxes = new char[70][70]; //2D array of goals
     private List< Agent > agents = new ArrayList< Agent >();
 
     //Testing arrays for making goal lists unprioritized at first
@@ -34,6 +39,7 @@ public class Preprocessor {
     public List<Agent> readMap() throws IOException {
         //int[][] mapStatic = new int[70][70];  //Static part of the map saved in an integer array
 
+        ArrayList<String> mapLines = new ArrayList<String>();
         Map< Character, String > colors = new HashMap< Character, String >();
         String line, color;
         int levelLine = 0;
@@ -47,11 +53,28 @@ public class Preprocessor {
                 colors.put( id.charAt( 0 ), color );
         }
 
-        // Read lines specifying level layout
+        //Read maplines into a buffer to optimize the seize of the variables holding the map
         while ( !line.equals( "" ) ) {
+            mapLines.add(line);
+            line = serverMessages.readLine();
+        }
 
-            for (int i = 0; i < line.length(); i++) {
-                char id = line.charAt(i);
+        //Setting the map size
+        mapHeight  = mapLines.get(0).length();
+        mapWidth   = mapLines.size();
+        this.walls = new char[mapWidth][mapHeight];
+        this.boxes = new char[mapWidth][mapHeight];
+
+        //DEBUG: Print walls
+//        for (String s: mapLines) {
+//            System.err.println(s);
+//        }
+        System.err.println("MapSize: " + this.walls[0].length + "," + this.walls.length);
+
+        // Read lines specifying level layout
+        for (String ln : mapLines) {
+            for (int i = 0; i < ln.length(); i++) {
+                char id = ln.charAt(i);
                 if ('0' <= id && id <= '9') //If agent
                     agents.add(new Agent(id, colors.get(id)));
                 else if (id == '+') { //If wall
@@ -68,8 +91,30 @@ public class Preprocessor {
                 }
             }
             levelLine ++;
-            line = serverMessages.readLine();
+
         }
+//        while ( !line.equals( "" ) ) {
+//
+//            for (int i = 0; i < line.length(); i++) {
+//                char id = line.charAt(i);
+//                if ('0' <= id && id <= '9') //If agent
+//                    agents.add(new Agent(id, colors.get(id)));
+//                else if (id == '+') { //If wall
+//                    this.walls[levelLine][i] = id;
+////                    System.err.println("Found wall at ("+ levelLine + "," + i +"): " + walls[levelLine][i]);
+//                }
+//                else if ('a' <= id && id <= 'z' ){ //If goal
+//                    goals.put(new Point(levelLine,i),id);
+//                    goalPoints.add(new Point(levelLine,i));
+//                }
+//                else if ('A' <= id && id <= 'Z'){ //If boxes
+//                    boxes[levelLine][i] = id;
+//                    boxPoints.add(new Point(levelLine,i));
+//                }
+//            }
+//            levelLine ++;
+//            line = serverMessages.readLine();
+//        }
         findCorridors();
         printCorridorMap();
         return agents;
