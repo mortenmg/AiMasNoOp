@@ -1,20 +1,19 @@
-import java.awt.*;
-
 /**
  * Created by Philip on 12-04-2016.
  */
 public class Cell {
 
     private char    cell = '0';         // Empty Cell / Wall
-    private char    object = '0';       // Agent / Box
+    private char    agent = '0';       // Agent / Box
+    private char    box = '0';
     private int     corridor = 0;     // Int to define if its part of a corridor
 
     /** The cell is either a wall / an empty cell(set to 0)
-     *  The object is either an Agent or an Box.
+     *  The agent is either an Agent or an Box.
      * */
-    Cell(char cell, char object){
+    Cell(char cell, char agent){
         this.cell = cell;
-        this.object = object;
+        this.agent = agent;
     }
 
     /** We have an agent inside a corridor */
@@ -31,21 +30,27 @@ public class Cell {
         this.cell = cell;
     }
 
-    public void setObject(char object){
-        this.object = object;
+    public void setAgent(char agent){
+        this.agent = agent;
+    }
+
+    public void setBox(char box){
+        this.box = box;
     }
 
     public char getCell(){
         return this.cell;
     }
 
-    public char getObject(){
-        return this.object;
+    public char getAgent(){
+        return this.agent;
     }
 
-    /** Returns '0' if there is no objects otherwise it returns a char according to the object on it*/
+    public char getBox(){ return this.box; }
+
+    /** Returns '0' if there is no objects otherwise it returns a char according to the agent on it*/
     public char isEmpty(){
-        if(object != '0'){ return object;}
+        if(agent != '0'){ return agent;}
         if(cell != '0' ){ return cell;}
         return '0';
     }
