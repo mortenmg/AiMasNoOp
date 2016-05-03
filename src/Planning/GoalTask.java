@@ -1,19 +1,31 @@
 package Planning;
 
+import java.awt.*;
+
 /**
  * Created by hvingelby on 4/5/16.
  */
 public class GoalTask implements Task{
-    @Override
-    public String getGoal() {
-        return null;
+    private int taskId;
+    private Point boxPosition;
+    private Point goalPosition;
+    private String color;
+
+    /**
+     * simple goal constructor
+     * @param id Id of task!
+     */
+    GoalTask(int id){
+        this.taskId = id;
     }
 
-    @Override
-    public String getBox() {
-        return null;
+    GoalTask(Point boxPosition, Point goalPosition, String colorOfTask){
+        this.boxPosition = boxPosition;
+        this.goalPosition = goalPosition;
+        this.color = colorOfTask;
     }
-    //Box position as Planning.point
-    //Goal position as Planning.point
-    //Color of agent required to complete the task
+
+    public int getTaskId() {
+        return taskId;
+    }
 }

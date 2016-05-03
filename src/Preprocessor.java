@@ -135,7 +135,7 @@ public class Preprocessor {
                 char goal = goals.get(g);
                 char box = Character.toLowerCase(boxes[b.x][b.y]);
                 if (goal == box){
-                    goalTasks.add(new GoalTask()); //TODO add arguments to fit goalTask class
+                    goalTasks.add(new GoalTask(0)); //TODO add arguments to fit goalTask class
                 }
             }
         }
