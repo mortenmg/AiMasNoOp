@@ -162,7 +162,7 @@ public class SearchClient {
 
 		Strategy strategy = null;
 		// Ex 1: 
-		if (args[0].equals("BFS")) {
+		if(args[0].equals("BFS")) {
 			strategy = new StrategyBFS();
 		}
 		// Ex 2:
