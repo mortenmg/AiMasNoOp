@@ -98,8 +98,8 @@ public class SearchClient {
 					initialState.agentCol = i;
 				} else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
 					initialState.boxes[levelLines][i] = chr;
-					// point = new point(levelLines, i, chr);
-					// initialState.listOfBoxes.add(point);
+					// Planning.point = new Planning.point(levelLines, i, chr);
+					// initialState.listOfBoxes.add(Planning.point);
 				} else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
 					this.goals[levelLines][i] = chr;
 					point = new point(levelLines, i, chr);
@@ -142,7 +142,7 @@ public class SearchClient {
 			}
 
 			strategy.addToExplored( leafNode );
-			for ( Node n : leafNode.getExpandedNodes() ) { // The list of expanded nodes is shuffled randomly; see Node.java
+			for ( Node n : leafNode.getExpandedNodes() ) { // The list of expanded nodes is shuffled randomly; see Planning.State.java
 				if ( !strategy.isExplored( n ) && !strategy.inFrontier( n ) ) {
 					strategy.addToFrontier( n );
 				}

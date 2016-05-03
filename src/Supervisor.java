@@ -15,8 +15,8 @@ public class Supervisor {
         System.err.println( "Supervisor is running!" );
 
         // The solution is a list of "nodes" or states
-        //LinkedList< Node > solution = null;
-        //Command.every;
+        //LinkedList< Planning.State > solution = null;
+        //Planning.Command.every;
         // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
 

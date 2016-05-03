@@ -1,3 +1,7 @@
+import Planning.AStarPlanner;
+import Planning.Command;
+import Planning.Planner;
+
 import java.util.Random;
 
 /**
@@ -6,10 +10,12 @@ import java.util.Random;
 public class Agent implements Runnable{
     private char id;
     private String color;
+    private Planner planner;
 
     public Agent( char id, String color ) {
         this.id = id;
         this.color = color;
+        this.planner = new AStarPlanner();
     }
 
     public String act() {
@@ -21,4 +27,6 @@ public class Agent implements Runnable{
     public void run() {
         System.err.println("Hi from agent "+id);
     }
+
+
 }
