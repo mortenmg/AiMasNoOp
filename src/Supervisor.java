@@ -11,6 +11,7 @@ public class Supervisor extends Thread {
     private  List< Agent > agents = new ArrayList<>();
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
     public final Queue<Message> supervisorMsgQueue;
+    private Cell[][] map;
 
     public static void main( String[] args ) {
         System.err.println( "Supervisor is running!" );
@@ -197,10 +198,17 @@ public class Supervisor extends Thread {
         try {
             p.readMap();
             agents = p.getAgents();
+            map = new Cell[p.mapWidth][p.mapHeight];
+            map = p.getMap();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         this.supervisorMsgQueue = new LinkedList<>();
+    }
+
+    public Cell[][] getMap(){
+       return map;
     }
 }
