@@ -12,6 +12,7 @@ public class Supervisor extends Thread {
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
     public final Queue<Message> supervisorMsgQueue;
     private Cell[][] map;
+    private Level level;
 
     public static void main( String[] args ) {
         System.err.println( "Supervisor is running!" );
@@ -197,7 +198,11 @@ public class Supervisor extends Thread {
 
         try {
             p.readMap();
+            level = new Level(p.getMap());
+            level.setAgents(p.getAgents());
+
             agents = p.getAgents();
+
             map = new Cell[p.mapWidth][p.mapHeight];
             map = p.getMap();
 

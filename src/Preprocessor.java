@@ -16,9 +16,9 @@ public class Preprocessor {
 
 //    private char[][] walls = new char[70][70]; //2D Array of walls
 //    private char[][] goals = new char[70][70]; //2D array of goals
-    private HashMap<Point,Character> goals = new HashMap<Point,Character>();
+    private HashMap<Point,Character> goals = new HashMap<>();
 //    private char[][] boxes = new char[70][70]; //2D array of goals
-    private List< Agent > agents = new ArrayList< Agent >();
+    private ArrayList< Agent > agents = new ArrayList<>();
 
     //Testing arrays for making goal lists unprioritized at first
     private ArrayList<Point> goalPoints = new ArrayList<Point>();
@@ -131,7 +131,7 @@ public class Preprocessor {
         return map;
     }
 
-    public List<Agent> getAgents(){
+    public ArrayList<Agent> getAgents(){
         return agents;
     }
 
