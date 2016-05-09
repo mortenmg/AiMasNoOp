@@ -1,3 +1,5 @@
+package ai;
+
 import java.awt.*;
 import java.util.ArrayList;
 

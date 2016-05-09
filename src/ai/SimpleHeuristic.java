@@ -1,4 +1,4 @@
-package Planning;
+package ai;
 
 import java.util.Comparator;
 
@@ -20,7 +20,7 @@ public class SimpleHeuristic implements Comparator<State>{
     }
 
     /**
-     * public abstract int f( State n );
+     * public abstract int f( ai.State n );
      * @param n
      * @return
      */
@@ -45,7 +45,7 @@ public class SimpleHeuristic implements Comparator<State>{
             for (int col = 1 ; col< n.MAX_COLUMN-1 ; col++ ) {
                 char chr = n.boxes[row][col];
                 if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
-                    for (point p : SearchClient.goalsAsPoints){
+                    for (ai.point p : SearchClient.goalsAsPoints){
                         if (p.a == Character.toLowerCase(chr)){
                             h += euclidean(p,row,col);
                         }

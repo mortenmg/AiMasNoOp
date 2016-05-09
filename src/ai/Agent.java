@@ -1,6 +1,4 @@
-import Planning.AStarPlanner;
-import Planning.Command;
-import Planning.Planner;
+package ai;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -35,7 +33,11 @@ public class Agent extends Thread {
     public void run() {
         System.err.println("Hi from agent "+id);
 
-        //Agent loop
+        // ai.Agent will calculate a plan
+        State s = new State(null);
+        planner.generatePlan();
+
+        //ai.Agent loop
         while(!terminateFlag) {
 
             handleMessage(getMessage());
@@ -52,10 +54,10 @@ public class Agent extends Thread {
      */
     private void handleMessage(Message msg){
         switch (msg.getType()){
-            case Loser:
+            case MessageType.Loser:
                 System.err.println(getAgentId() + " did not get : " + msg.getTask().getTaskId());
                 break;
-            case Winner:
+            case MessageType.Winner:
                 //Make real plan!
                 currentTask = msg.getTask();
                 try {
@@ -69,8 +71,8 @@ public class Agent extends Thread {
                 currentTask = null; //Im done with my task
                 break;
 
-            case TaskForBid:
-                if(currentTask == null){ //Agent is idle
+            case MessageType.TaskForBid:
+                if(currentTask == null){ //ai.Agent is idle
 
                     //Calc bid -- Currently random! - Use heuristic
 
@@ -87,11 +89,11 @@ public class Agent extends Thread {
                 }
 
                 break;
-            case Help:
+            case MessageType.Help:
                 //Calc "bid" for help
                 //Return bid
                 break;
-            case Terminate:
+            case MessageType.Terminate:
                 this.terminateFlag = true;
                 break;
             default:

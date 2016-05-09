@@ -1,3 +1,5 @@
+package ai;
+
 /**
  * Created by Mathias on 14-04-2016.
  */
@@ -40,7 +42,7 @@ public class Message implements Comparable<Message> {
      * Constructor for bid message
      * @param bid bid size
      * @param sender Sender of message
-     * @param task Task for bid
+     * @param task ai.Task for bid
      */
     Message(int bid, char sender, GoalTask task){
         this.receiver = 'S'; //S for supervisor

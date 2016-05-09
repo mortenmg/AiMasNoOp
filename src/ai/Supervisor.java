@@ -1,7 +1,11 @@
+package ai;
+
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -12,13 +16,14 @@ public class Supervisor extends Thread {
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
     public final Queue<Message> supervisorMsgQueue;
     private Cell[][] map;
+    private HashMap<Point,Character> goals;
 
     public static void main( String[] args ) {
-        System.err.println( "Supervisor is running!" );
+        System.err.println( "ai.Supervisor is running!" );
 
         // The solution is a list of "nodes" or states
-        //LinkedList< Planning.State > solution = null;
-        //Planning.Command.every;
+        //LinkedList< ai.State > solution = null;
+        //ai.Command.every;
         // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
 
@@ -55,7 +60,7 @@ public class Supervisor extends Thread {
             //end while
             //Final loop - Handle incoming help message and requests for new tasks
         }
-            while (sendActions());
+        while (sendActions());
     }
 
     /**
@@ -126,8 +131,8 @@ public class Supervisor extends Thread {
 
     /**
      * send message to single agent
-     * @param a Agent to send message to
-     * @param msg Message to send
+     * @param a ai.Agent to send message to
+     * @param msg ai.Message to send
      */
     private synchronized void sendMessageToAgent(Agent a, Message msg) {
         a.postMsg(msg);
@@ -146,7 +151,7 @@ public class Supervisor extends Thread {
      * @param msg
      */
     public void broadcastMessage(Message msg){
-        System.err.println("Supervisor: Broadcasting - " + msg.getTask().getTaskId());
+        System.err.println("ai.Supervisor: Broadcasting - " + msg.getTask().getTaskId());
 
         for (Agent a: agents) {
             a.postMsg(msg);
@@ -188,7 +193,7 @@ public class Supervisor extends Thread {
     }
 
     /**
-     * The constructor of the Supervisor class.
+     * The constructor of the ai.Supervisor class.
      * This is private due to the singleton
      * pattern.
      */
@@ -200,6 +205,7 @@ public class Supervisor extends Thread {
             agents = p.getAgents();
             map = new Cell[p.mapWidth][p.mapHeight];
             map = p.getMap();
+            goals = p.getGoals();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -208,7 +214,11 @@ public class Supervisor extends Thread {
         this.supervisorMsgQueue = new LinkedList<>();
     }
 
-    public Cell[][] getMap(){
-       return map;
+    public Cell[][] getMap() {
+        return map;
+    }
+
+    public HashMap<Point, Character> getGoals() {
+        return goals;
     }
 }

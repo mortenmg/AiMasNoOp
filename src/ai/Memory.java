@@ -1,6 +1,6 @@
-/*
+package ai;/*
 This class contains everything needed to report memory usage throughout the program
-Call "Memory.stringRep()" to get the memory info string
+Call "ai.Memory.stringRep()" to get the memory info string
  */
 
 public class Memory {

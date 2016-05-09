@@ -1,11 +1,11 @@
-package Planning;
+package ai;
 
 import java.awt.*;
 
 /**
  * Created by hvingelby on 4/5/16.
  */
-public class GoalTask implements Task{
+public class GoalTask implements Task {
     private int taskId;
     private Point boxPosition;
     private Point goalPosition;
@@ -27,5 +27,15 @@ public class GoalTask implements Task{
 
     public int getTaskId() {
         return taskId;
+    }
+
+    @Override
+    public Point getGoalPoint() {
+        return goalPosition;
+    }
+
+    @Override
+    public String getBoxId() {
+        return null;
     }
 }

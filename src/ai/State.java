@@ -1,5 +1,6 @@
-package Planning;
+package ai;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +56,11 @@ public class State {
 	public boolean isGoalState() {
 		for ( int row = 1; row < MAX_ROW - 1; row++ ) {
 			for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
-				char g = SearchClient.goals[row][col];
+
+				// TODO: Vær sikker på at dette er korrekt.
+				char g = Supervisor.getInstance().getGoals().get(new Point(row,col));
+				//char g = Supervisor.getInstance().getMap()[row][col].getCell();
+
 				char b = Character.toLowerCase( boxes[row][col] );
 				if ( g > 0 && b != g) {
 					return false;
@@ -120,7 +125,7 @@ public class State {
 	}
 
 	private boolean cellIsFree( int row, int col ) {
-		return ( !SearchClient.walls[row][col] && this.boxes[row][col] == 0 );
+		return ! Supervisor.getInstance().getMap()[row][col].hasBox();
 	}
 
 	private boolean boxAt( int row, int col ) {
@@ -128,11 +133,11 @@ public class State {
 	}
 
 	private int dirToRowChange( Command.dir d ) {
-		return ( d == dir.S ? 1 : ( d == dir.N ? -1 : 0 ) ); // South is down one row (1), north is up one row (-1)
+		return ( d == Command.dir.S ? 1 : ( d == Command.dir.N ? -1 : 0 ) ); // South is down one row (1), north is up one row (-1)
 	}
 
 	private int dirToColChange( Command.dir d ) {
-		return ( d == dir.E ? 1 : ( d == dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
+		return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
 	}
 
 	private State ChildNode() {
@@ -155,6 +160,7 @@ public class State {
 		return plan;
 	}
 
+	/*
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -166,6 +172,7 @@ public class State {
 		result = prime * result + Arrays.deepHashCode( SearchClient.walls );
 		return result;
 	}
+	*/
 
 	@Override
 	public boolean equals( Object obj ) {
@@ -190,16 +197,18 @@ public class State {
 		return true;
 	}
 
+	// TODO: Refactor this to string method
+	/*
 	public String toString() {
 		StringBuilder s = new StringBuilder();
 		for ( int row = 0; row < MAX_ROW; row++ ) {
-			if ( !SearchClient.walls[row][0] ) {
+			if ( Supervisor.getInstance().getMap()[row][0].getCell()!='+' ) {
 				break;
 			}
 			for ( int col = 0; col < MAX_COLUMN; col++ ) {
 				if ( this.boxes[row][col] > 0 ) {
 					s.append( this.boxes[row][col] );
-				} else if ( SearchClient.goals[row][col] > 0 ) {
+				} else if ( Supervisor.getInstance().getGoals().get(new Point(row,col)) > 0 ) {
 					s.append( SearchClient.goals[row][col] );
 				} else if ( SearchClient.walls[row][col] ) {
 					s.append( "+" );
@@ -214,5 +223,6 @@ public class State {
 		}
 		return s.toString();
 	}
+	*/
 
 }

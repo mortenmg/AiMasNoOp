@@ -1,4 +1,4 @@
-import Planning.GoalTask;
+package ai;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Created by hvingelby on 4/5/16.
+ * Created by  on 4/5/16.
  */
 public class Preprocessor {
     private BufferedReader serverMessages;
@@ -108,7 +108,7 @@ public class Preprocessor {
 //            for (int i = 0; i < line.length(); i++) {
 //                char id = line.charAt(i);
 //                if ('0' <= id && id <= '9') //If agent
-//                    agents.add(new Agent(id, colors.get(id)));
+//                    agents.add(new ai.Agent(id, colors.get(id)));
 //                else if (id == '+') { //If wall
 //                    this.walls[levelLine][i] = id;
 ////                    System.err.println("Found wall at ("+ levelLine + "," + i +"): " + walls[levelLine][i]);
@@ -249,7 +249,7 @@ public class Preprocessor {
     }
 
     public void printCorridorMap(){
-        System.err.println("Corridor map print out");
+        System.err.println("ai.Corridor map print out");
         String s = "";
 
         for (int i = 0; i < walls.length;i++) {
@@ -267,4 +267,11 @@ public class Preprocessor {
         }
     }
 
+    /**
+     * @author Rasmus
+     * @return
+     */
+    public HashMap<Point,Character> getGoals() {
+        return goals;
+    }
 }

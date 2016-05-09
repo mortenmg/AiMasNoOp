@@ -1,15 +1,17 @@
+package ai;
+
 /**
  * Created by Philip on 12-04-2016.
  */
 public class Cell {
 
-    private char    cell = '0';         // Empty Cell / Wall
-    private char    agent = '0';       // Agent / Box
+    private char    cell = '0';         // Empty ai.Cell / Wall
+    private char    agent = '0';       // ai.Agent / Box
     private char    box = '0';
     private int     corridor = 0;     // Int to define if its part of a corridor
 
     /** The cell is either a wall / an empty cell(set to 0)
-     *  The agent is either an Agent or an Box.
+     *  The agent is either an ai.Agent or an Box.
      * */
     Cell(char cell, char agent){
         this.cell = cell;
@@ -47,6 +49,15 @@ public class Cell {
     }
 
     public char getBox(){ return this.box; }
+
+    /**
+     * @author Rasmus
+     * @return
+     */
+    public boolean hasBox() {
+        return cell != '+' && box != '0';
+    }
+
 
     /** Returns '0' if there is no objects otherwise it returns a char according to the agent on it*/
     public char isEmpty(){

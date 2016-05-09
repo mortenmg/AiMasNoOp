@@ -1,4 +1,4 @@
-package Planning;
+package ai;
 
 public class point{
 	int x;
