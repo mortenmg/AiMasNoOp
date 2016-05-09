@@ -91,7 +91,6 @@ public class Preprocessor {
                 }
             }
             levelLine ++;
-
         }
 //        while ( !line.equals( "" ) ) {
 //
