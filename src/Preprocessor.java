@@ -25,7 +25,7 @@ public class Preprocessor {
     private ArrayList<Point> boxPoints = new ArrayList<Point>();
     private HashMap<Integer,Boolean> corridorTypes = new HashMap<Integer,Boolean>();
 
-    private Cell[][] map = new Cell[70][70];
+    private static Cell[][] map;
 
     public Preprocessor(BufferedReader serverMessages) {
         this.serverMessages = serverMessages;
@@ -65,6 +65,8 @@ public class Preprocessor {
         this.walls = new char[mapWidth][mapHeight];
         this.boxes = new char[mapWidth][mapHeight];
 
+        map = new Cell[mapWidth][mapHeight];
+
         //DEBUG: Print walls
 //        for (String s: mapLines) {
 //            System.err.println(s);
@@ -75,10 +77,14 @@ public class Preprocessor {
         for (String ln : mapLines) {
             for (int i = 0; i < ln.length(); i++) {
                 char id = ln.charAt(i);
-                if ('0' <= id && id <= '9') //If agent
+                if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(id, colors.get(id)));
+                    map[levelLine][i].setAgent(id);
+                    map[levelLine][i].setCell(' '); // Set the floor beneath the box.
+                }
                 else if (id == '+') { //If wall
                     this.walls[levelLine][i] = id;
+                    map[levelLine][i].setCell(id);
 //                    System.err.println("Found wall at ("+ levelLine + "," + i +"): " + walls[levelLine][i]);
                 }
                 else if ('a' <= id && id <= 'z' ){ //If goal
@@ -88,6 +94,8 @@ public class Preprocessor {
                 else if ('A' <= id && id <= 'Z'){ //If boxes
                     boxes[levelLine][i] = id;
                     boxPoints.add(new Point(levelLine,i));
+                    map[levelLine][i].setBox(id);
+                    map[levelLine][i].setCell(' '); // Set the floor beneath the box.
                 }
             }
             levelLine ++;
@@ -117,6 +125,10 @@ public class Preprocessor {
         findCorridors();
         printCorridorMap();
         return agents;
+    }
+
+    public Cell[][] getMap(){
+        return map;
     }
 
     public List<Agent> getAgents(){
