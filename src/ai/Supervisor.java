@@ -17,13 +17,14 @@ public class Supervisor extends Thread {
     public final Queue<Message> supervisorMsgQueue;
     private Cell[][] map;
     private HashMap<Point,Character> goals;
+    private Level level;
 
     public static void main( String[] args ) {
-        System.err.println( "ai.Supervisor is running!" );
+        System.err.println( "Supervisor is running!" );
 
         // The solution is a list of "nodes" or states
-        //LinkedList< ai.State > solution = null;
-        //ai.Command.every;
+        //LinkedList< Node > solution = null;
+        //Command.every;
         // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
 
@@ -60,7 +61,7 @@ public class Supervisor extends Thread {
             //end while
             //Final loop - Handle incoming help message and requests for new tasks
         }
-        while (sendActions());
+            while (sendActions());
     }
 
     /**
@@ -131,8 +132,8 @@ public class Supervisor extends Thread {
 
     /**
      * send message to single agent
-     * @param a ai.Agent to send message to
-     * @param msg ai.Message to send
+     * @param a Agent to send message to
+     * @param msg Message to send
      */
     private synchronized void sendMessageToAgent(Agent a, Message msg) {
         a.postMsg(msg);
@@ -151,7 +152,7 @@ public class Supervisor extends Thread {
      * @param msg
      */
     public void broadcastMessage(Message msg){
-        System.err.println("ai.Supervisor: Broadcasting - " + msg.getTask().getTaskId());
+        System.err.println("Supervisor: Broadcasting - " + msg.getTask().getTaskId());
 
         for (Agent a: agents) {
             a.postMsg(msg);
@@ -193,7 +194,7 @@ public class Supervisor extends Thread {
     }
 
     /**
-     * The constructor of the ai.Supervisor class.
+     * The constructor of the Supervisor class.
      * This is private due to the singleton
      * pattern.
      */
@@ -202,7 +203,11 @@ public class Supervisor extends Thread {
 
         try {
             p.readMap();
+            level = new Level(p.getMap());
+            level.setAgents(p.getAgents());
+
             agents = p.getAgents();
+
             map = new Cell[p.mapWidth][p.mapHeight];
             map = p.getMap();
             goals = p.getGoals();
@@ -214,8 +219,8 @@ public class Supervisor extends Thread {
         this.supervisorMsgQueue = new LinkedList<>();
     }
 
-    public Cell[][] getMap() {
-        return map;
+    public Cell[][] getMap(){
+       return map;
     }
 
     public HashMap<Point, Character> getGoals() {
