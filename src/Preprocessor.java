@@ -16,7 +16,8 @@ public class Preprocessor {
 
 //    private char[][] walls = new char[70][70]; //2D Array of walls
 //    private char[][] goals = new char[70][70]; //2D array of goals
-    private HashMap<Point,Character> goals = new HashMap<>();
+    private HashMap<Point,Character> goals = new HashMap<
+        >();
 //    private char[][] boxes = new char[70][70]; //2D array of goals
     private ArrayList< Agent > agents = new ArrayList<>();
 

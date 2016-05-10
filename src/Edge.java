@@ -1,15 +1,7 @@
-public class Edge implements Cloneable{
+public class Edge {
 
-    public Object clone() throws CloneNotSupportedException{
-        Edge clone = (Edge) super.clone();
-        clone.to = (Node)clone.to.clone();
-        clone.from = (Node)clone.from.clone();
-
-        return clone;
-    }
-
-    private Node to;
-    private Node from;
+    private final Node to;
+    private final Node from;
     private final int weight;
 
 
@@ -18,7 +10,6 @@ public class Edge implements Cloneable{
         this.from = from;
         this.weight = setWeight();
     }
-
 
     private int setWeight(){
         if(to.getType() == NodeType.WALL){
