@@ -3,7 +3,7 @@ package ai;
 import java.awt.*;
 import java.util.*;
 
-import static ai.MessageType.*;
+import ai.State;
 
 /**
  * Created by hvingelby on 4/5/16.
@@ -66,6 +66,11 @@ public class Agent extends Thread {
 
         // ai.Agent will calculate a plan
         ai.State s = new ai.State(null);
+        LinkedList<ai.State> states = planner.generatePlan(s, new GoalTask(0, 0, 0));
+
+        for (ai.State state : states) {
+            System.err.println(state.action);
+        }
 
         addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
 

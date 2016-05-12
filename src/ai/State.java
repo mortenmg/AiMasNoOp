@@ -55,6 +55,7 @@ public class State {
 	}
 
 	public ArrayList<State> getExpandedNodes() {
+		//System.err.println("Looking from "+agentCol+" , "+agentRow);
 		ArrayList<State> expandedStates = new ArrayList<State>( Command.every.length );
 		for ( Command c : Command.every ) {
 			// Determine applicability of action
@@ -113,7 +114,7 @@ public class State {
 	}
 
 	private boolean cellIsFree( int row, int col ) {
-		return ! Supervisor.getInstance().getMap()[row][col].hasBox();
+		return ! Supervisor.getInstance().getMap()[row][col].hasBox() && Supervisor.getInstance().getMap()[row][col].getType()!=CellType.WALL;
 	}
 
 	/**
@@ -143,8 +144,9 @@ public class State {
 
 	private State ChildNode() {
 		State copy = new State( this );
+		copy.setBoxes((HashMap<Integer, Box>) boxes.clone());
+		copy.setTask(this.task);
 		// TODO: do a proper deepclone of the boxes array.
-		//copy.setBoxes();
 		return copy;
 	}
 
@@ -158,19 +160,17 @@ public class State {
 		return plan;
 	}
 
-	/*
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + agentCol;
 		result = prime * result + agentRow;
-		result = prime * result + Arrays.deepHashCode( boxes );
-		result = prime * result + Arrays.deepHashCode( SearchClient.goals );
-		result = prime * result + Arrays.deepHashCode( SearchClient.walls );
+		//result = prime * result + Arrays.deepHashCode( boxes );
+		//result = prime * result + Arrays.deepHashCode( SearchClient.goals );
+		//result = prime * result + Arrays.deepHashCode( SearchClient.walls );
 		return result;
 	}
-	*/
 
 	@Override
 	public boolean equals( Object obj ) {
@@ -185,9 +185,19 @@ public class State {
 			return false;
 		if ( agentRow != other.agentRow )
 			return false;
-		/*if ( !Arrays.deepEquals( boxes, other.boxes ) ) {
+
+		if(! boxes.keySet().equals(other.boxes.keySet())) {
 			return false;
-		}*/
+		}
+		for (int key : boxes.keySet()) {
+			if(!boxes.get(key).point.equals(other.boxes.get(key).point) ||
+					!(boxes.get(key).letter == other.boxes.get(key).letter)) {
+				return false;
+			}
+		}
+		//if ( !Arrays.deepEquals( boxes, other.boxes ) ) {
+		//	return false;
+		//}
 		// if ( !Arrays.deepEquals( goals, other.goals ) )
 		// 	return false;
 		// if ( !Arrays.deepEquals( walls, other.walls ) )

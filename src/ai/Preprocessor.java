@@ -91,6 +91,8 @@ public class Preprocessor {
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
                     map[levelLine][i] = new Cell(CellType.EMPTY, boxId);
                     boxId++;
+                } else {
+                    map[levelLine][i] = new Cell(CellType.EMPTY);
                 }
             }
             levelLine++;

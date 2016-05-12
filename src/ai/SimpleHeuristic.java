@@ -40,7 +40,7 @@ public class SimpleHeuristic implements Comparator<State>{
     public int h( State n ) {
 
 
-        int pathHeuristic = Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(n.agentCol, n.agentRow, n.getTask().getGoalId());
+        //int pathHeuristic = Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(n.agentCol, n.agentRow, n.getTask().getGoalId());
 
         /*
         int h = 0;

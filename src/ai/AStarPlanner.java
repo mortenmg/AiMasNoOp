@@ -33,7 +33,10 @@ public class AStarPlanner implements Planner {
         this.initialState = initialState;
         initialState.setBoxes(Supervisor.getInstance().getLevel().getBoxes());
         initialState.setTask(task);
+        initialState.agentCol = 1;
+        initialState.agentRow = 1;
 
+        frontier.add( initialState );
 
         int iterations = 0;
         while (true) {
@@ -42,6 +45,7 @@ public class AStarPlanner implements Planner {
             }
 
             if (frontier.isEmpty()) {
+                System.err.println("The A* frontier is empty");
                 return null;
             }
 
@@ -79,8 +83,8 @@ public class AStarPlanner implements Planner {
      * @return Boolean
      */
     public boolean isGoalState(State state, Task task) {
+        //System.err.println("");
         Box box = state.getBoxes().get(task.getBoxId());
-
-        return box.point.equals(supervisor.getLevel().getBoxWithId(task.getBoxId()));
+        return box.point.equals(Supervisor.getInstance().getLevel().getBoxWithId(task.getBoxId()));
     }
 }
