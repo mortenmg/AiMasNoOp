@@ -16,20 +16,16 @@ public class AStarPlanner implements Planner {
     public HashSet<State> explored;
     public State initialState = null;
 
-    private Task task;
-
     private Supervisor supervisor;
 
-    public AStarPlanner(Task task){
+    public AStarPlanner(){
         super();
         supervisor = Supervisor.getInstance();
-        this.task = task;
-
     }
 
     // The planner generates a plan
     public LinkedList<State> generatePlan(State initialState, Task task) {
-        SimpleHeuristic heuristic = new SimpleHeuristic(new GoalTask(0), 0);
+        SimpleHeuristic heuristic = new SimpleHeuristic(task, 0);
         frontier = new PriorityQueue<>(10, heuristic);
         explored = new HashSet<>();
 
@@ -85,6 +81,6 @@ public class AStarPlanner implements Planner {
     public boolean isGoalState(State state, Task task) {
         Box box = state.getBoxes().get(task.getBoxId());
 
-        return box.point.equals(task.getGoalPoint());
+        return box.point.equals(supervisor.getLevel().getBoxWithId(task.getBoxId()));
     }
 }

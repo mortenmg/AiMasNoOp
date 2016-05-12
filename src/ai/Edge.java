@@ -14,9 +14,9 @@ public class Edge {
     }
 
     private int setWeight(){
-        if(to.getType() == NodeType.WALL){
+        if(to.getType() == CellType.WALL){
             return 1000;
-        }else if(to.getType() == NodeType.BOX){
+        }else if(to.getType() == CellType.BOX){
             return 500;
         }else{ //To.getType() == .EMPTY
             return 1;

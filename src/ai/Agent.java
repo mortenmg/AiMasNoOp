@@ -37,7 +37,7 @@ public class Agent extends Thread {
 
         // ai.Agent will calculate a plan
         ai.State s = new ai.State(null);
-        planner.generatePlan(s, new GoalTask(0));
+        planner.generatePlan(s, new GoalTask(0,0,0));
 
         //ai.Agent loop
         while(!terminateFlag) {

@@ -38,15 +38,15 @@ public class GraphToolkit {
                 }
             }
         }
-        updateNodePaths(graph,startNode);
+        updateNodePaths(graph,startNode.getId());
     }
 
-    private static void updateNodePaths(ArrayList<Node> graph, Node goal){
+    private static void updateNodePaths(ArrayList<Node> graph, int goalId){
 
         for(Node n: graph) {
             Node pathNode = n;
-            if (pathNode.getType() != NodeType.WALL) { //Only save paths from !Wall nodes
-                n.addGoalPath(pathNode.getCost(), goal.getId());
+            if (pathNode.getType() != CellType.WALL) { //Only save paths from !Wall nodes
+                n.addGoalPath(pathNode.getCost(), goalId);
             }
         }
     }

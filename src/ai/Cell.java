@@ -63,5 +63,6 @@ public class Cell {
 enum CellType {
     EMPTY,
     WALL,
-    GOAL
+    GOAL,
+    BOX
 }

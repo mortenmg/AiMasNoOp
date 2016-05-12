@@ -9,22 +9,14 @@ import java.util.Stack;
  * Created by Mathias on 03-05-2016.
  */
 
-enum NodeType{
-    EMPTY,
-    WALL,
-    BOX,
-    GOAL,
-    AGENT,
-}
-
 public class Node {
 
-    private String id;
+    private int id;
     private Point coord;
     private CellType type;
     private LinkedList<Edge> neighboors;
     private int cost;
-    private HashMap<String,Integer> goalPathCosts;
+    private HashMap<Integer,Integer> goalPathCosts;
 
     private Node previous;
 
@@ -36,7 +28,7 @@ public class Node {
         goalPathCosts = new HashMap<>();
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -48,7 +40,7 @@ public class Node {
         return type;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
@@ -60,12 +52,16 @@ public class Node {
         this.cost = cost;
     }
 
-    public void addGoalPath(Integer cost, String goalId){
+    public void addGoalPath(Integer cost, int goalId){
         this.goalPathCosts.put(goalId,cost);
     }
 
     public void setPrevious(Node n){
         this.previous = n;
+    }
+
+    public int getGoalPathsCost(int goalId){
+        return goalPathCosts.get(goalId);
     }
 
     public LinkedList<Edge> getNeighboors() {

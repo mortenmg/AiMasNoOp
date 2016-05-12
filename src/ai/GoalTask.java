@@ -7,35 +7,28 @@ import java.awt.*;
  */
 public class GoalTask implements Task {
     private int taskId;
-    private Point boxPosition;
-    private Point goalPosition;
+    private int boxId;
+    private int goalId;
     private String color;
 
-    /**
-     * simple goal constructor
-     * @param id Id of task!
-     */
-    GoalTask(int id){
-        this.taskId = id;
-    }
-
-    GoalTask(Point boxPosition, Point goalPosition, String colorOfTask){
-        this.boxPosition = boxPosition;
-        this.goalPosition = goalPosition;
-        this.color = colorOfTask;
+    GoalTask(int boxId, int goalId, int taskId){
+        this.boxId = boxId;
+        this.goalId = goalId;
+        this.taskId = taskId;
     }
 
     public int getTaskId() {
         return taskId;
     }
 
+
     @Override
-    public Point getGoalPoint() {
-        return goalPosition;
+    public int getGoalId() {
+        return this.goalId;
     }
 
     @Override
-    public String getBoxId() {
-        return null;
+    public int getBoxId() {
+        return boxId;
     }
 }

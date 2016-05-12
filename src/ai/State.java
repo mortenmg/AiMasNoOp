@@ -20,6 +20,10 @@ public class State {
 
 	public void setTask(Task task) { this.task = task; }
 
+	public Task getTask() {
+		return this.task;
+	}
+
 	// public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];
 	private HashMap<Integer,Box> boxes = new HashMap<>();
 

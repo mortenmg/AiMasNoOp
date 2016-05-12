@@ -83,7 +83,7 @@ public class Message implements Comparable<Message> {
 
     public GoalTask getTask(){
         if (task == null){
-            this.task = new GoalTask(0);
+            this.task = new GoalTask(0,0,0);
         }
         return this.task;
     }

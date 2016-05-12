@@ -8,13 +8,13 @@ import java.awt.*;
 public class HelperTask implements Task {
 
     @Override
-    public Point getGoalPoint() {
-        return null;
+    public int getGoalId() {
+        return 0;
     }
 
     @Override
-    public String getBoxId() {
-        return null;
+    public int getBoxId() {
+        return 0;
     }
     //Box position as ai.point
     //Color of agent required to complete the task

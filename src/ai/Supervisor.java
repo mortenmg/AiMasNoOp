@@ -50,7 +50,7 @@ public class Supervisor extends Thread {
         while (totalTaskCount > 0) {
             System.err.println("Main loop supervisor");
             //While not all agents have task - Part of initial routine
-            Message task = new Message(new GoalTask(totalTaskCount), MessageType.TaskForBid);
+            Message task = new Message(new GoalTask(0,0,0), MessageType.TaskForBid);
 
             broadcastMessage(task);
 
