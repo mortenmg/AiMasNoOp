@@ -12,10 +12,17 @@ public class State {
 	public int agentRow;
 	public int agentCol;
 
+	private Task goalTask;
+
 	private int boxId;
+	private int goalId;
 
 	public HashMap<Integer, Box> getBoxes() {
 		return boxes;
+	}
+
+	public Task getGoalTask() {
+		return this.goalTask;
 	}
 
 	// public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];

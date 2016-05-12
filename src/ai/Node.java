@@ -24,7 +24,7 @@ public class Node {
     private CellType type;
     private LinkedList<Edge> neighboors;
     private int cost;
-    private HashMap<String,Integer> goalPathCosts;
+    private HashMap<Integer,Integer> goalPathCosts;
 
     private Node previous;
 
@@ -60,12 +60,16 @@ public class Node {
         this.cost = cost;
     }
 
-    public void addGoalPath(Integer cost, String goalId){
+    public void addGoalPath(Integer cost, int goalId){
         this.goalPathCosts.put(goalId,cost);
     }
 
     public void setPrevious(Node n){
         this.previous = n;
+    }
+
+    public int getGoalPathsCost(int goalId){
+        return goalPathCosts.get(goalId);
     }
 
     public LinkedList<Edge> getNeighboors() {

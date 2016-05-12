@@ -23,8 +23,7 @@ public class Preprocessor {
     private ArrayList<Agent> agents = new ArrayList<>();
 
     //For graph creation
-    private ArrayList<ArrayList<Node>> nodes = new ArrayList<>();
-    private ArrayList<Node> graph = new ArrayList<>();
+    private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
 
     //Testing arrays for making goal lists unprioritized at first
     private ArrayList<Point> goalPoints = new ArrayList<Point>();
@@ -253,11 +252,11 @@ public class Preprocessor {
 
         //Make Nodes
         for (int i = 0; i < this.map.length; i++) {
-            this.nodes.add(new ArrayList<>());
+            this.graph.add(new ArrayList<>());
             for (int j = 0; j < map[i].length; j++) {
                 Node n = new Node(new Point(i, j), this.map[i][j].getType());
 
-                nodes.get(i).add(n); //Add to graph
+                graph.get(i).add(n); //Add to graph
             }
         }
 
@@ -265,38 +264,28 @@ public class Preprocessor {
         for (int i = 0; i < this.map.length; i++) {
             for (int j = 0; j < this.map[i].length; j++) {
 
-                if (j + 1 < this.nodes.get(i).size()) { //Right neighbor case
+                if (j + 1 < this.graph.get(i).size()) { //Right neighbor case
                     //if(j+1 < this.map[i].length){
-                    this.nodes.get(i).get(j).addNeighbor(new Edge(nodes.get(i).get(j + 1), nodes.get(i).get(j)));
+                    this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i).get(j + 1), graph.get(i).get(j)));
                 }
                 if (j - 1 >= 0) { //Left neighbor case
-                    this.nodes.get(i).get(j).addNeighbor(new Edge(nodes.get(i).get(j - 1), nodes.get(i).get(j)));
+                    this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i).get(j - 1), graph.get(i).get(j)));
                 }
-                if (i + 1 < this.nodes.size()) { //Check for list below - Below neighbor case
-                    if (j < this.nodes.get(i + 1).size()) { //Check if list below is bigger then current index(x-axis)
-                        this.nodes.get(i).get(j).addNeighbor(new Edge(nodes.get(i + 1).get(j), nodes.get(i).get(j)));
+                if (i + 1 < this.graph.size()) { //Check for list below - Below neighbor case
+                    if (j < this.graph.get(i + 1).size()) { //Check if list below is bigger then current index(x-axis)
+                        this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i + 1).get(j), graph.get(i).get(j)));
                     }
                 }
                 if (i - 1 >= 0) { //Above neighbor case
-                    if (j < this.nodes.get(i - 1).size()) {
-                        this.nodes.get(i).get(j).addNeighbor(new Edge(nodes.get(i - 1).get(j), nodes.get(i).get(j)));
+                    if (j < this.graph.get(i - 1).size()) {
+                        this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i - 1).get(j), graph.get(i).get(j)));
                     }
                 }
             }
         }
-
-        ArrayList<Node> g = new ArrayList<>();
-
-        for (ArrayList<Node> nodeList : this.nodes) {
-            for (Node n : nodeList) {
-                g.add(n);
-            }
-        }
-
-        this.graph = g;
     }
 
-    public ArrayList<Node> getGraph() {
+    public ArrayList<ArrayList<Node>> getGraph() {
         return graph;
     }
 }

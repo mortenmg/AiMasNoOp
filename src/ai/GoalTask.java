@@ -7,8 +7,8 @@ import java.awt.*;
  */
 public class GoalTask implements Task {
     private int taskId;
-    private Point boxPosition;
-    private Point goalPosition;
+    private int boxId;
+    private int goalId;
     private String color;
 
     /**
@@ -19,9 +19,9 @@ public class GoalTask implements Task {
         this.taskId = id;
     }
 
-    GoalTask(Point boxPosition, Point goalPosition, String colorOfTask){
-        this.boxPosition = boxPosition;
-        this.goalPosition = goalPosition;
+    GoalTask(int boxPosition, int goalPosition, String colorOfTask){
+        this.boxId = boxPosition;
+        this.goalId = goalPosition;
         this.color = colorOfTask;
     }
 
@@ -29,13 +29,14 @@ public class GoalTask implements Task {
         return taskId;
     }
 
+
     @Override
-    public Point getGoalPoint() {
-        return goalPosition;
+    public int getGoalId() {
+        return this.goalId;
     }
 
     @Override
-    public String getBoxId() {
-        return null;
+    public int getBoxId() {
+        return boxId;
     }
 }
