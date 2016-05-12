@@ -15,7 +15,7 @@
     Compiling SearchClient from the directory of this readme:
         $ javac searchclient/*.java
     
-    Memory settings:
+    ai.Memory settings:
         * Unless your hardware is unable to support this, you should let SearchClient allocate at least 1GB of memory *
         Your JVM determines how much memory a program is allowed to allocate. These settings can be manipulated by certain VM options.
         The -Xmx option sets the limit for how much memory a process is allowed to consume and is most interesting option here.

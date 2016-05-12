@@ -13,13 +13,10 @@ public class Preprocessor {
     private BufferedReader serverMessages;
     int mapHeight = 0;
     int mapWidth = 0;
-    private char[][] walls;
-    private char[][] boxes;
 
-//    private char[][] walls = new char[70][70]; //2D Array of walls
-//    private char[][] goals = new char[70][70]; //2D array of goals
-    private HashMap<Point,Character> goals = new HashMap<>();
-//    private char[][] boxes = new char[70][70]; //2D array of goals
+    private char[][] walls;
+    private HashMap<Integer,Goal> goals = new HashMap<>();
+    private HashMap<Integer,Box> boxes = new HashMap<>();
     private ArrayList< Agent > agents = new ArrayList<>();
 
     //Testing arrays for making goal lists unprioritized at first
@@ -39,7 +36,6 @@ public class Preprocessor {
     }
 
     public List<Agent> readMap() throws IOException {
-        //int[][] mapStatic = new int[70][70];  //Static part of the map saved in an integer array
 
         ArrayList<String> mapLines = new ArrayList<String>();
         Map< Character, String > colors = new HashMap< Character, String >();
@@ -65,14 +61,12 @@ public class Preprocessor {
         mapHeight  = mapLines.get(0).length();
         mapWidth   = mapLines.size();
         this.walls = new char[mapWidth][mapHeight];
-        this.boxes = new char[mapWidth][mapHeight];
 
         map = new Cell[mapWidth][mapHeight];
 
-        //DEBUG: Print walls
-//        for (String s: mapLines) {
-//            System.err.println(s);
-//        }
+        int goalId = 0;
+        int boxId = 0;
+
         System.err.println("MapSize: " + this.walls[0].length + "," + this.walls.length);
 
         // Read lines specifying level layout
@@ -81,49 +75,25 @@ public class Preprocessor {
                 char id = ln.charAt(i);
                 if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(id, colors.get(id)));
-                    map[levelLine][i].setAgent(id);
-                    map[levelLine][i].setCell(' '); // Set the floor beneath the box.
-                }
-                else if (id == '+') { //If wall
+                    //map[levelLine][i].setAgent(id);
+                } else if (id == '+') { //If wall
                     this.walls[levelLine][i] = id;
-                    map[levelLine][i].setCell(id);
-//                    System.err.println("Found wall at ("+ levelLine + "," + i +"): " + walls[levelLine][i]);
-                }
-                else if ('a' <= id && id <= 'z' ){ //If goal
-                    goals.put(new Point(levelLine,i),id);
-                    goalPoints.add(new Point(levelLine,i));
-                }
-                else if ('A' <= id && id <= 'Z'){ //If boxes
-                    boxes[levelLine][i] = id;
-                    boxPoints.add(new Point(levelLine,i));
-                    map[levelLine][i].setBox(id);
-                    map[levelLine][i].setCell(' '); // Set the floor beneath the box.
+                    map[levelLine][i] = new Cell(CellType.WALL);
+                } else if ('a' <= id && id <= 'z') { //If goal
+                    goals.put(goalId, new Goal(goalId, id, new Point(levelLine, i)));
+                    map[levelLine][i] = new Cell(CellType.GOAL);
+                    goalId++;
+                } else if ('A' <= id && id <= 'Z') { //If boxes
+                    boxes.put(boxId, new Box(boxId, id, "green", new Point(levelLine, i)));
+                    boxId++;
                 }
             }
-            levelLine ++;
+            levelLine++;
         }
-//        while ( !line.equals( "" ) ) {
-//
-//            for (int i = 0; i < line.length(); i++) {
-//                char id = line.charAt(i);
-//                if ('0' <= id && id <= '9') //If agent
-//                    agents.add(new ai.Agent(id, colors.get(id)));
-//                else if (id == '+') { //If wall
-//                    this.walls[levelLine][i] = id;
-////                    System.err.println("Found wall at ("+ levelLine + "," + i +"): " + walls[levelLine][i]);
-//                }
-//                else if ('a' <= id && id <= 'z' ){ //If goal
-//                    goals.put(new Point(levelLine,i),id);
-//                    goalPoints.add(new Point(levelLine,i));
-//                }
-//                else if ('A' <= id && id <= 'Z'){ //If boxes
-//                    boxes[levelLine][i] = id;
-//                    boxPoints.add(new Point(levelLine,i));
-//                }
-//            }
-//            levelLine ++;
-//            line = serverMessages.readLine();
-//        }
+
+        System.err.println("Number of goals: "+goals.size());
+        System.err.println("Number of boxes: "+boxes.size());
+
         findCorridors();
         printCorridorMap();
         return agents;
@@ -141,11 +111,11 @@ public class Preprocessor {
     private PriorityQueue<GoalTask> findGoalTasks(){
         PriorityQueue <GoalTask> goalTasks = new PriorityQueue<GoalTask>() ;
         //Loop through goals and find a box for each goal
-        for (Point g : goalPoints) {
-            for (Point b : boxPoints) {
-                char goal = goals.get(g);
-                char box = Character.toLowerCase(boxes[b.x][b.y]);
-                if (goal == box){
+        for(int goalKey : goals.keySet()){
+            for(int boxKey : boxes.keySet()) {
+                char goalLetter = goals.get(goalKey).letter;
+                char boxLetter = boxes.get(boxKey).letter;
+                if (goalLetter == Character.toLowerCase(boxLetter)){
                     goalTasks.add(new GoalTask(0)); //TODO add arguments to fit goalTask class
                 }
             }
@@ -270,7 +240,7 @@ public class Preprocessor {
      * @author Rasmus
      * @return
      */
-    public HashMap<Point,Character> getGoals() {
+    public HashMap<Integer, Goal> getGoals() {
         return goals;
     }
 }

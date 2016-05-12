@@ -1,11 +1,27 @@
 package ai;
 
+import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Stack;
 
 /**
  * Created by Mathias on 05-05-2016.
  */
+
+import java.awt.*;
+import java.util.*;
+
+
+import java.awt.*;
+import java.io.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
+
+
 public class GraphToolkit {
 
 
@@ -32,6 +48,22 @@ public class GraphToolkit {
                     neighbor.getTo().setPrevious(n);
                 }
             }
+        }
+        updateNodePaths(graph,startNode);
+    }
+
+    private static void updateNodePaths(ArrayList<Node> graph, Node goal){
+
+        for(Node n: graph){
+            Node pathNode = n;
+            HashMap<String,Stack<Point>> goalPaths = new HashMap<>();
+            Stack<Point> path = new Stack<>();
+            while(pathNode != null){
+                path.add(pathNode.getCoord());
+
+                pathNode = pathNode.getPrevious();
+            }
+            n.addGoalPath(path, goal.getId());
         }
     }
 

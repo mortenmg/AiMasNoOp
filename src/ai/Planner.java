@@ -9,5 +9,5 @@ import java.util.LinkedList;
  */
 public interface Planner {
     // LinkedList<Action> generatePlan(ai.Task task);
-    LinkedList<State> generatePlan (State initialState) ;
+    LinkedList<State> generatePlan (State initialState, Task task) ;
 }

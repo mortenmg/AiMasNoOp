@@ -16,41 +16,49 @@ public class AStarPlanner implements Planner {
     public HashSet<State> explored;
     public State initialState = null;
 
+    private Supervisor supervisor;
+
+    public AStarPlanner(){
+        super();
+        supervisor = Supervisor.getInstance();
+    }
 
     // The planner generates a plan
-    public LinkedList<State> generatePlan (State initialState, Task task) {
+    public LinkedList<State> generatePlan(State initialState, Task task) {
         SimpleHeuristic heuristic = new SimpleHeuristic(new GoalTask(0), 0);
-        frontier = new PriorityQueue<>(10,heuristic);
+        frontier = new PriorityQueue<>(10, heuristic);
         explored = new HashSet<>();
+
+        // Creates the initial state with the boxes as they are in the moment
         this.initialState = initialState;
-        // TODO: copy the boxes from the global level as they are in the moment
-        // initialState.setBoxes(SOMETHING FANCY);
+        initialState.setBoxes(supervisor.getLevel().getBoxes());
 
-            int iterations = 0;
-            while ( true ) {
-                if ( iterations % 200 == 0 ) {
-                    System.err.println( searchStatus() );
-                }
 
-                if ( frontier.isEmpty() ) {
-                    return null;
-                }
-
-                State leafState = frontier.poll();
-
-                if ( isGoalState(leafState, task) ) {
-                    return leafState.extractPlan();
-                }
-
-                explored.add(leafState);
-                for ( State n : leafState.getExpandedNodes() ) { // The list of expanded nodes is shuffled randomly; see Planning.searchclient.ai.State.java
-                    if ( ! explored.contains( n ) && !frontier.contains(n) ) {
-                        frontier.add( n );
-                    }
-                }
-                iterations++;
+        int iterations = 0;
+        while (true) {
+            if (iterations % 200 == 0) {
+                System.err.println(searchStatus());
             }
+
+            if (frontier.isEmpty()) {
+                return null;
+            }
+
+            State leafState = frontier.poll();
+
+            if (isGoalState(leafState, task)) {
+                return leafState.extractPlan();
+            }
+
+            explored.add(leafState);
+            for (State n : leafState.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Planning.searchclient.ai.State.java
+                if (!explored.contains(n) && !frontier.contains(n)) {
+                    frontier.add(n);
+                }
+            }
+            iterations++;
         }
+    }
 
     public String toString() {
         return "AStar search";
@@ -71,7 +79,7 @@ public class AStarPlanner implements Planner {
      */
     public boolean isGoalState(State state, Task task) {
         Box box = state.getBoxes().get(task.getBoxId());
-        // TODO: if box.coordinates == task.getGoal().coordinates then it is a goal!
-        return true;
+
+        return box.point.equals(task.getGoalPoint());
     }
 }

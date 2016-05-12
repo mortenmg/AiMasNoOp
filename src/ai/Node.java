@@ -1,7 +1,9 @@
 package ai;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Stack;
 
 /**
  * Created by Mathias on 03-05-2016.
@@ -15,28 +17,23 @@ enum NodeType{
     AGENT,
 }
 
-public class Node implements Cloneable {
-
-    public Object clone() throws CloneNotSupportedException{
-        return super.clone();
-    }
-
+public class Node {
 
     private String id;
     private Point coord;
     private NodeType type;
     private LinkedList<Edge> neighboors;
-    private boolean marked;
     private int cost;
+    private HashMap<String,Stack<Point>> goalPaths;
 
     private Node previous;
 
     public Node(Point coord, NodeType type){
         this.coord = coord;
         this.type = type;
-        this.marked = false;
         this.neighboors = new LinkedList<>();
         this.previous = null;
+        goalPaths = new HashMap<>();
     }
 
     public void setId(String id) {
@@ -51,6 +48,10 @@ public class Node implements Cloneable {
         return type;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public int getCost() {
         return cost;
     }
@@ -61,6 +62,14 @@ public class Node implements Cloneable {
 
     public Node getPrevious() {
         return previous;
+    }
+
+    public void addGoalPath(Stack<Point> path, String goalId){
+        this.goalPaths.put(goalId,path);
+    }
+
+    public Stack<Point> getPathForGoal(String goalId){
+        return this.goalPaths.get(goalId);
     }
 
     public void setPrevious(Node n){

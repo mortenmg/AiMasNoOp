@@ -7,18 +7,16 @@ import java.awt.*;
  */
 class Box {
 
-    String id;
+    int id;
+    char letter;
     String color;
     Point point;
 
-    public Box(String id, String color, Point location){
+    public Box(int id, char letter, String color, Point location){
         this.id = id;
+        this.letter = letter;
         this.color = color;
         this.point = location;
     }
-
-
-
-
 
 }

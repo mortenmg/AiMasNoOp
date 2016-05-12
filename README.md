@@ -37,7 +37,7 @@ JAR path:
 ```
 Program arguments:
 ```
--l "../AiMasNoOp/WarmUp/levels/SAD1.lvl" -g 50 -c "java Supervisor"
+-l "../AiMasNoOp/WarmUp/levels/SAD1.lvl" -g 50 -c "java ai.Supervisor"
 ```
 
 Working directory:

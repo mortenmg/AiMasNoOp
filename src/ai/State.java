@@ -1,11 +1,7 @@
 package ai;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 public class State {
 
@@ -16,20 +12,15 @@ public class State {
 	public int agentRow;
 	public int agentCol;
 
-	// Arrays are indexed from the top-left of the level, with first index being row and second being column.
-	// Row 0: (0,0) (0,1) (0,2) (0,3) ...
-	// Row 1: (1,0) (1,1) (1,2) (1,3) ...
-	// Row 2: (2,0) (2,1) (2,2) (2,3) ...
-	// ...
-	// (Start in the top left corner, first go down, then go right)
-	// E.g. walls[2] is an array of booleans having size MAX_GRID
-	// walls[row][col] is true if there's a wall at (row, col)
-	//
+	private int boxId;
 
-	
-	public char[][] boxes = new char[MAX_ROW][MAX_COLUMN]; 
-	// public char[][] goals = new char[MAX_ROW][MAX_COLUMN];
-	public ArrayList<point> listOfBoxes = new ArrayList<>();
+	public HashMap<Integer, Box> getBoxes() {
+		return boxes;
+	}
+
+	// public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];
+	private HashMap<Integer,Box> boxes = new HashMap<>();
+
 
 	public State parent;
 	public Command action;
@@ -53,23 +44,6 @@ public class State {
 		return this.parent == null;
 	}
 
-	public boolean isGoalState() {
-		for ( int row = 1; row < MAX_ROW - 1; row++ ) {
-			for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
-
-				// TODO: Vær sikker på at dette er korrekt.
-				char g = Supervisor.getInstance().getGoals().get(new Point(row,col));
-				//char g = Supervisor.getInstance().getMap()[row][col].getCell();
-
-				char b = Character.toLowerCase( boxes[row][col] );
-				if ( g > 0 && b != g) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
 	public ArrayList<State> getExpandedNodes() {
 		ArrayList<State> expandedStates = new ArrayList<State>( Command.every.length );
 		for ( Command c : Command.every ) {
@@ -78,7 +52,7 @@ public class State {
 			int newAgentCol = this.agentCol + dirToColChange( c.dir1 );
 
 			if ( c.actType == Command.type.Move ) {
-				// Check if there's a wall or box on the Cell to which the agent is moving
+				// Check if there's a wall or box on the ai.Cell to which the agent is moving
 				if ( cellIsFree( newAgentRow, newAgentCol ) ) {
 					State n = this.ChildNode();
 					n.action = c;
@@ -91,19 +65,21 @@ public class State {
 				if ( boxAt( newAgentRow, newAgentCol ) ) {
 					int newBoxRow = newAgentRow + dirToRowChange( c.dir2 );
 					int newBoxCol = newAgentCol + dirToColChange( c.dir2 );
-					// .. and that new Cell of box is free
+					// .. and that new ai.Cell of box is free
 					if ( cellIsFree( newBoxRow, newBoxCol ) ) {
 						State n = this.ChildNode();
 						n.action = c;
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
-						n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
-						n.boxes[newAgentRow][newAgentCol] = 0;
+
+						// update boxes
+						n.boxes.get(boxId).point = new Point(newBoxRow,newBoxCol);
+
 						expandedStates.add( n );
 					}
 				}
 			} else if ( c.actType == Command.type.Pull ) {
-				// Cell is free where agent is going
+				// ai.Cell is free where agent is going
 				if ( cellIsFree( newAgentRow, newAgentCol ) ) {
 					int boxRow = this.agentRow + dirToRowChange( c.dir2 );
 					int boxCol = this.agentCol + dirToColChange( c.dir2 );
@@ -113,8 +89,10 @@ public class State {
 						n.action = c;
 						n.agentRow = newAgentRow;
 						n.agentCol = newAgentCol;
-						n.boxes[this.agentRow][this.agentCol] = this.boxes[boxRow][boxCol];
-						n.boxes[boxRow][boxCol] = 0;
+
+						// update boxes
+						n.boxes.get(boxId).point = new Point(this.agentRow, this.agentCol);
+
 						expandedStates.add( n );
 					}
 				}
@@ -128,8 +106,21 @@ public class State {
 		return ! Supervisor.getInstance().getMap()[row][col].hasBox();
 	}
 
+	/**
+	 * Checks if there is a box in the location given,
+	 * and if the box is the relevant box
+	 * from the task.
+	 * @param row
+	 * @param col
+     * @return
+     */
 	private boolean boxAt( int row, int col ) {
-		return this.boxes[row][col] > 0;
+		Box myBox = boxes.get(boxId);
+		return myBox.point.equals(new Point(row,col));
+	}
+
+	public void setBoxes(HashMap<Integer, Box> boxes) {
+		this.boxes = boxes;
 	}
 
 	private int dirToRowChange( Command.dir d ) {
@@ -142,11 +133,8 @@ public class State {
 
 	private State ChildNode() {
 		State copy = new State( this );
-		for ( int row = 0; row < MAX_ROW; row++ ) {
-			// System.arraycopy( SearchClient.walls[row], 0, copy.walls[row], 0, MAX_COLUMN );
-			System.arraycopy( this.boxes[row], 0, copy.boxes[row], 0, MAX_COLUMN );
-			// System.arraycopy( this.goals[row], 0, copy.goals[row], 0, MAX_COLUMN );
-		}
+		// TODO: do a proper deepclone of the boxes array.
+		//copy.setBoxes();
 		return copy;
 	}
 
@@ -187,9 +175,9 @@ public class State {
 			return false;
 		if ( agentRow != other.agentRow )
 			return false;
-		if ( !Arrays.deepEquals( boxes, other.boxes ) ) {
+		/*if ( !Arrays.deepEquals( boxes, other.boxes ) ) {
 			return false;
-		}
+		}*/
 		// if ( !Arrays.deepEquals( goals, other.goals ) )
 		// 	return false;
 		// if ( !Arrays.deepEquals( walls, other.walls ) )
@@ -202,13 +190,13 @@ public class State {
 	public String toString() {
 		StringBuilder s = new StringBuilder();
 		for ( int row = 0; row < MAX_ROW; row++ ) {
-			if ( Supervisor.getInstance().getMap()[row][0].getCell()!='+' ) {
+			if ( ai.Supervisor.getInstance().getMap()[row][0].getCell()!='+' ) {
 				break;
 			}
 			for ( int col = 0; col < MAX_COLUMN; col++ ) {
 				if ( this.boxes[row][col] > 0 ) {
 					s.append( this.boxes[row][col] );
-				} else if ( Supervisor.getInstance().getGoals().get(new Point(row,col)) > 0 ) {
+				} else if ( ai.Supervisor.getInstance().getGoals().get(new Point(row,col)) > 0 ) {
 					s.append( SearchClient.goals[row][col] );
 				} else if ( SearchClient.walls[row][col] ) {
 					s.append( "+" );

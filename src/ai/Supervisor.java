@@ -23,7 +23,7 @@ public class Supervisor extends Thread {
         System.err.println( "Supervisor is running!" );
 
         // The solution is a list of "nodes" or states
-        //LinkedList< Node > solution = null;
+        //LinkedList< ai.Node > solution = null;
         //Command.every;
         // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
@@ -226,4 +226,6 @@ public class Supervisor extends Thread {
     public HashMap<Point, Character> getGoals() {
         return goals;
     }
+
+    public Level getLevel() { return level; }
 }

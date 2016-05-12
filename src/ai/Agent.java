@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+import static ai.MessageType.*;
+
 /**
  * Created by hvingelby on 4/5/16.
  */
@@ -34,8 +36,8 @@ public class Agent extends Thread {
         System.err.println("Hi from agent "+id);
 
         // ai.Agent will calculate a plan
-        State s = new State(null);
-        planner.generatePlan();
+        ai.State s = new ai.State(null);
+        planner.generatePlan(s, new GoalTask(0));
 
         //ai.Agent loop
         while(!terminateFlag) {
@@ -54,10 +56,10 @@ public class Agent extends Thread {
      */
     private void handleMessage(Message msg){
         switch (msg.getType()){
-            case MessageType.Loser:
+            case Loser:
                 System.err.println(getAgentId() + " did not get : " + msg.getTask().getTaskId());
                 break;
-            case MessageType.Winner:
+            case Winner:
                 //Make real plan!
                 currentTask = msg.getTask();
                 try {
@@ -71,7 +73,7 @@ public class Agent extends Thread {
                 currentTask = null; //Im done with my task
                 break;
 
-            case MessageType.TaskForBid:
+            case TaskForBid:
                 if(currentTask == null){ //ai.Agent is idle
 
                     //Calc bid -- Currently random! - Use heuristic
@@ -89,11 +91,11 @@ public class Agent extends Thread {
                 }
 
                 break;
-            case MessageType.Help:
+            case Help:
                 //Calc "bid" for help
                 //Return bid
                 break;
-            case MessageType.Terminate:
+            case Terminate:
                 this.terminateFlag = true;
                 break;
             default:

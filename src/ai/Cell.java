@@ -8,7 +8,18 @@ public class Cell {
     private char    cell = '0';         // Empty ai.Cell / Wall
     private char    agent = '0';       // ai.Agent / Box
     private char    box = '0';
-    private int     corridor = 0;     // Int to define if its part of a corridor
+    //private Box box;
+    private int corridor = 0;     // Int to define if its part of a corridor
+
+    public CellType getType() {
+        return type;
+    }
+
+    public void setType(CellType type) {
+        this.type = type;
+    }
+
+    private CellType type = CellType.EMPTY; // The cell can have a type default is empty;
 
     /** The cell is either a wall / an empty cell(set to 0)
      *  The agent is either an ai.Agent or an Box.
@@ -26,6 +37,13 @@ public class Cell {
     /** We have a corridor provide a number */
     Cell(int corridor){
         this.corridor = corridor;
+    }
+
+    /**
+     * The real constructor
+     */
+    Cell(CellType type) {
+        this.type = type;
     }
 
     public void setCell(char cell){
@@ -65,4 +83,15 @@ public class Cell {
         if(cell != '0' ){ return cell;}
         return '0';
     }
+
+    @Override
+    public String toString() {
+        return "This cell is a special cell";
+    }
+}
+
+enum CellType{
+    EMPTY,
+    WALL,
+    GOAL
 }

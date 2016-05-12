@@ -1,16 +1,19 @@
 package ai;
 
+import java.awt.*;
+
 /**
  * Created by hvingelby on 4/5/16.
  */
 public class HelperTask implements Task {
+
     @Override
-    public String getGoal() {
+    public Point getGoalPoint() {
         return null;
     }
 
     @Override
-    public String getBox() {
+    public String getBoxId() {
         return null;
     }
     //Box position as ai.point

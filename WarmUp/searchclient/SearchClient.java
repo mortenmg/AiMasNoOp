@@ -98,8 +98,8 @@ public class SearchClient {
 					initialState.agentCol = i;
 				} else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
 					initialState.boxes[levelLines][i] = chr;
-					// Planning.point = new Planning.point(levelLines, i, chr);
-					// initialState.listOfBoxes.add(Planning.point);
+					// ai.point = new ai.point(levelLines, i, chr);
+					// initialState.listOfBoxes.add(ai.point);
 				} else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
 					this.goals[levelLines][i] = chr;
 					point = new point(levelLines, i, chr);
@@ -123,7 +123,7 @@ public class SearchClient {
 				System.err.println( strategy.searchStatus() );
 			}
 			if ( Memory.shouldEnd() ) {
-				System.err.format( "Memory limit almost reached, terminating search %s\n", Memory.stringRep() );
+				System.err.format( "ai.Memory limit almost reached, terminating search %s\n", Memory.stringRep() );
 				return null;
 			}
 			if ( strategy.timeSpent() > 300 ) { // Minutes timeout
@@ -142,7 +142,7 @@ public class SearchClient {
 			}
 
 			strategy.addToExplored( leafNode );
-			for ( Node n : leafNode.getExpandedNodes() ) { // The list of expanded nodes is shuffled randomly; see Planning.State.java
+			for ( Node n : leafNode.getExpandedNodes() ) { // The list of expanded nodes is shuffled randomly; see ai.State.java
 				if ( !strategy.isExplored( n ) && !strategy.inFrontier( n ) ) {
 					strategy.addToFrontier( n );
 				}
