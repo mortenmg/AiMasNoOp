@@ -99,12 +99,13 @@ public class Preprocessor {
         System.err.println("Number of goals: " + goals.size());
         System.err.println("Number of boxes: " + boxes.size());
 
+        level = new Level(map);
         level.setBoxes(boxes);
         level.setGoals(goals);
 
         findCorridors();
         printCorridorMap();
-        createGraphFromMap();
+        //createGraphFromMap();
         return agents;
     }
 

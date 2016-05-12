@@ -31,7 +31,7 @@ public class AStarPlanner implements Planner {
 
         // Creates the initial state with the boxes as they are in the moment
         this.initialState = initialState;
-        initialState.setBoxes(supervisor.getLevel().getBoxes());
+        initialState.setBoxes(Supervisor.getInstance().getLevel().getBoxes());
         initialState.setTask(task);
 
 
@@ -66,7 +66,7 @@ public class AStarPlanner implements Planner {
     }
 
     public String searchStatus() {
-        return String.format( "#Explored: %4d, #Frontier: %3d, Time: %3.2f s \t%s", explored.size(), frontier.size(), 12, 13);//timeSpent(), ai.Memory.stringRep() );
+        return String.format( "#Explored: %4d, #Frontier: %3d, Time: %s \t%s", explored.size(), frontier.size(), "12", "13");//timeSpent(), ai.Memory.stringRep() );
     }
 
     /**
