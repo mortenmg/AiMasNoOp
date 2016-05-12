@@ -79,7 +79,7 @@ public class Preprocessor {
                 char id = ln.charAt(i);
                 if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(id, colors.get(id)));
-                    //map[levelLine][i].setAgent(id);
+                    map[levelLine][i] = new Cell(CellType.EMPTY);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][i] = id;
                     map[levelLine][i] = new Cell(CellType.WALL);
@@ -91,6 +91,8 @@ public class Preprocessor {
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
                     map[levelLine][i] = new Cell(CellType.EMPTY, boxId);
                     boxId++;
+                } else {
+                    map[levelLine][i] = new Cell(CellType.EMPTY);
                 }
             }
             levelLine++;
