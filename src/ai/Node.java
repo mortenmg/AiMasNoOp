@@ -24,7 +24,7 @@ public class Node {
     private NodeType type;
     private LinkedList<Edge> neighboors;
     private int cost;
-    private HashMap<String,Stack<Point>> goalPaths;
+    private HashMap<String,Integer> goalPathCosts;
 
     private Node previous;
 
@@ -33,7 +33,7 @@ public class Node {
         this.type = type;
         this.neighboors = new LinkedList<>();
         this.previous = null;
-        goalPaths = new HashMap<>();
+        goalPathCosts = new HashMap<>();
     }
 
     public void setId(String id) {
@@ -64,12 +64,8 @@ public class Node {
         return previous;
     }
 
-    public void addGoalPath(Stack<Point> path, String goalId){
-        this.goalPaths.put(goalId,path);
-    }
-
-    public Stack<Point> getPathForGoal(String goalId){
-        return this.goalPaths.get(goalId);
+    public void addGoalPath(Integer cost, String goalId){
+        this.goalPathCosts.put(goalId,cost);
     }
 
     public void setPrevious(Node n){

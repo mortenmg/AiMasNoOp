@@ -47,7 +47,5 @@ public class Graph{
         return boxes;
     }
 
-    public Stack<Point> getPathFromPointToGoal(Point from, String goalId){
-        return graph.get(from).getPathForGoal(goalId);
-    }
+
 }
