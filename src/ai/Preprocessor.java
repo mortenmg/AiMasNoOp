@@ -78,8 +78,8 @@ public class Preprocessor {
             for (int i = 0; i < ln.length(); i++) {
                 char id = ln.charAt(i);
                 if ('0' <= id && id <= '9') { //If agent
-                    agents.add(new Agent(id, colors.get(id)));
-                    //map[levelLine][i].setAgent(id);
+                    agents.add(new Agent(id, colors.get(id), new Point(levelLine,i)));
+                    map[levelLine][i] = new Cell(CellType.AGENT);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][i] = id;
                     map[levelLine][i] = new Cell(CellType.WALL);
@@ -106,7 +106,21 @@ public class Preprocessor {
         findCorridors();
         printCorridorMap();
         //createGraphFromMap();
+
+        sortAgents();
         return agents;
+    }
+
+    private void sortAgents() {
+        Agent[] tempAgents = new Agent[agents.size()];
+        ArrayList<Agent> tmpagents = new ArrayList<>();
+        Agent a = agents.get(0);
+
+        for (Agent a: agents ) {
+            tmpagents.add(a.getAgentId(), a);
+        }
+
+        agents = tmpagents;
     }
 
     public Cell[][] getMap() {

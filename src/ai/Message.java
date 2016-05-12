@@ -23,7 +23,7 @@ public class Message implements Comparable<Message> {
     }
 
     private char receiver;
-    private char sender;
+    private int sender;
     private MessageType type;
     private GoalTask task;
     private int possibleBid;
@@ -44,7 +44,7 @@ public class Message implements Comparable<Message> {
      * @param sender Sender of message
      * @param task ai.Task for bid
      */
-    Message(int bid, char sender, GoalTask task){
+    Message(int bid, int sender, GoalTask task){
         this.receiver = 'S'; //S for supervisor
         this.possibleBid = bid;
         this.sender = sender;
@@ -62,7 +62,7 @@ public class Message implements Comparable<Message> {
         this.type = type;
     }
 
-    Message(char receiver, char sender, GoalTask task, MessageType type){
+    Message(char receiver, int sender, GoalTask task, MessageType type){
         this.receiver = receiver;
         this.sender = sender;
         this.task = task;
@@ -73,7 +73,7 @@ public class Message implements Comparable<Message> {
         return this.type;
     }
 
-    public char getSender(){
+    public int getSender(){
         return this.sender;
     }
 
@@ -88,7 +88,7 @@ public class Message implements Comparable<Message> {
         return this.task;
     }
 
-    public void setSender(char sender){
+    public void setSender(int sender){
         this.sender = sender;
     }
 

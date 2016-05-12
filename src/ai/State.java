@@ -31,6 +31,10 @@ public class State {
 	public State parent;
 	public Command action;
 
+	public Command getAction() {
+		return action;
+	}
+
 	private int g;
 
 	public State(State parent ) {

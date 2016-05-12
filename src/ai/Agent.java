@@ -1,8 +1,7 @@
 package ai;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
+import java.awt.*;
+import java.util.*;
 
 import static ai.MessageType.*;
 
@@ -11,24 +10,54 @@ import static ai.MessageType.*;
  */
 public class Agent extends Thread {
     private final Queue<Message> agentMsgQueue;
-    private char id;
+    private final Deque<Command> plan;
+    private int id;
     private String color;
     private Supervisor s;
+    private Point position;
     private GoalTask currentTask;
+    private boolean isWorking = false;
+
+    public boolean isWorking() {
+        return isWorking;
+    }
 
     private boolean terminateFlag = false;
     private Planner planner;
 
-    public Agent( char id, String color ) {
+    public Agent( char id, String color, Point position ) {
         this.id = id;
+        this.position = position;
         this.color = color;
         this.planner = new AStarPlanner();
         this.agentMsgQueue = new LinkedList<>();
+        this.plan = new LinkedList<>();
     }
 
     public String act() {
         Random rand = new Random();
         return Command.every[rand.nextInt( Command.every.length )].toString();
+    }
+
+    private void addPlan(LinkedList<ai.State> plan){
+        synchronized (this.plan) {
+            for (ai.State n : plan) {
+                this.plan.push(n.getAction());
+
+            }
+        }
+    }
+
+    public Command pollCommand(){
+        synchronized (this.plan){
+            return this.plan.poll();
+        }
+    }
+
+    public Command peekTopCommand(){
+        synchronized (this.plan){
+            return this.plan.peek();
+        }
     }
 
     @Override
@@ -37,7 +66,8 @@ public class Agent extends Thread {
 
         // ai.Agent will calculate a plan
         ai.State s = new ai.State(null);
-        planner.generatePlan(s, new GoalTask(0,0,0));
+
+        addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
 
         //ai.Agent loop
         while(!terminateFlag) {
@@ -125,9 +155,7 @@ public class Agent extends Thread {
         return agentMsgQueue.poll();
     }
 
-    public char getAgentId() {
-        return id;
-    }
+    public int getAgentId() { return id; }
 
 
 }

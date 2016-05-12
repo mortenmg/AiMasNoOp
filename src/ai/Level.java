@@ -21,6 +21,24 @@ public class Level {
         this.map = map;
     }
 
+    public boolean isCellFreeInDirection(int x, int y, Command.dir dir){
+        switch (dir){//TODO care for index out of bounds!
+            case dir.E:
+                return map[x][y+1].isFree();
+                break;
+            case dir.W:
+                return map[x][y-1].isFree();
+                break;
+            case dir.N:
+                return map[x+1][y].isFree();
+                break;
+            case dir.S:
+                return map[x-1][y].isFree();
+                break;
+        }
+
+    }
+
     public void setAgents(ArrayList<Agent> agents) {
         this.agents = agents;
     }

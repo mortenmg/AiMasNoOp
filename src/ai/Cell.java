@@ -8,7 +8,7 @@ public class Cell {
     private int corridor = 0;     // Int to define if its part of a corridor
     private CellType type = CellType.EMPTY; // The cell can have a type default is empty;
     private Integer boxId;
-
+    private boolean isFree;
 
     /**
      * We have a corridor provide a number
@@ -16,6 +16,11 @@ public class Cell {
     Cell(int corridor, CellType type) {
         this.corridor = corridor;
         this.type = type;
+        if (type == CellType.EMPTY){
+            this.isFree = true;
+        }else{
+            this.isFree = false;
+        }
     }
 
     /**
@@ -24,6 +29,11 @@ public class Cell {
     Cell(CellType type) {
         this.type = type;
         this.boxId = null;
+        if (type == CellType.EMPTY && boxId == null){
+            this.isFree = true;
+        }else{
+            this.isFree = false;
+        }
     }
 
     /**
@@ -34,6 +44,11 @@ public class Cell {
     public Cell(CellType type, int boxId) {
         this.type = type;
         this.boxId = boxId;
+        if (type == CellType.EMPTY && boxId == null){
+            this.isFree = true;
+        }else{
+            this.isFree = false;
+        }
     }
 
     /**
@@ -55,8 +70,18 @@ public class Cell {
         return type;
     }
 
-    public void setType(CellType type) {
+    public void setType(CellType type, Integer boxId) {
         this.type = type;
+        if (type == CellType.EMPTY && boxId == null){
+            this.isFree = true;
+        }else{
+            this.boxId = boxId;
+            this.isFree = false;
+        }
+    }
+
+    public boolean isFree() {
+        -
     }
 }
 
@@ -64,5 +89,6 @@ enum CellType {
     EMPTY,
     WALL,
     GOAL,
-    BOX
+    BOX,
+    AGENT
 }

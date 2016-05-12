@@ -1,6 +1,5 @@
 package ai;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,6 +16,7 @@ public class Supervisor extends Thread {
     public final Queue<Message> supervisorMsgQueue;
     private Cell[][] map;
     private Level level;
+    private int goalCount; //Mock of list of not fulfilled goals
 
     public static void main( String[] args ) {
         System.err.println( "Supervisor is running!" );
@@ -44,6 +44,20 @@ public class Supervisor extends Thread {
             agent.start();
         }
 
+        while(goalCount > 0){
+            for (Agent agent: agents) {
+                if(!agent.isWorking()){
+                    //Assign task to agent!
+                }
+            }
+
+            getActions();
+            validateActions();
+            sendActions();
+        }
+
+
+
         //For each initial task, broadcast it.
         int totalTaskCount = 5; //Mock of tasklist
 
@@ -63,10 +77,11 @@ public class Supervisor extends Thread {
             while (sendActions());
     }
 
+
     /**
      *Internal method for getting an agent from its name.
      **/
-    private Agent getAgentFromName(char agentName){
+    private Agent getAgentFromName(int agentName){
         List<Agent> allAgents = agents.stream().filter(c -> c.getAgentId() == agentName).collect(Collectors.toList());
         return allAgents.get(0);
     }
@@ -119,7 +134,7 @@ public class Supervisor extends Thread {
         Message minBid = Collections.min(bids);
 
         for (Message bid : bids) {
-            char receiver = bid.getSender();
+            int receiver = bid.getSender();
             if (bid == minBid) {
                 sendMessageToAgent(getAgentFromName(receiver), new Message(bid.getTask(), MessageType.Winner));
             } else {
@@ -155,6 +170,31 @@ public class Supervisor extends Thread {
 
         for (Agent a: agents) {
             a.postMsg(msg);
+        }
+    }
+
+
+    private ArrayList<Command> getValidActions() {
+
+        ArrayList<Command> cmds = new ArrayList<>();
+
+        for (Agent a: agents){
+            Command c = a.peekTopCommand();
+            if (isCommandValidForAgent(c, a)){
+                cmds.add(a.pollCommand());
+            }else{
+                //Handle invalid command!
+            }
+        }
+    }
+
+    private boolean isCommandValidForAgent(Command c, Agent a) {
+        if(c.actType == Command.type.Move){
+            this.getLevel().isCellFreeInDirection(a.g)
+        }if(c.actType == Command.type.Push){
+
+        }if(c.actType == Command.type.Pull){
+
         }
     }
 
