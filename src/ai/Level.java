@@ -25,6 +25,8 @@ public class Level {
         this.agents = agents;
     }
 
+    public void setGoals(HashMap<Point,Goal> goals) { this.goals = goals; }
+    public void setBoxes(HashMap<Integer,Box> boxes) { this.boxes = boxes; }
 
     public HashMap<Integer, Box> getBoxes() {
         return boxes;

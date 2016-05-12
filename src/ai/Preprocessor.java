@@ -19,12 +19,11 @@ public class Preprocessor {
     private HashMap<Integer,Box> boxes = new HashMap<>();
     private ArrayList< Agent > agents = new ArrayList<>();
 
-    //Testing arrays for making goal lists unprioritized at first
-    private ArrayList<Point> goalPoints = new ArrayList<Point>();
-    private ArrayList<Point> boxPoints = new ArrayList<Point>();
+
     private HashMap<Integer,Boolean> corridorTypes = new HashMap<Integer,Boolean>();
 
     private static Cell[][] map;
+    private Level level;
 
     public Preprocessor(BufferedReader serverMessages) {
         this.serverMessages = serverMessages;
@@ -84,7 +83,7 @@ public class Preprocessor {
                     map[levelLine][i] = new Cell(CellType.GOAL);
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
-                    boxes.put(boxId, new Box(boxId, id, "green", new Point(levelLine, i)));
+                    boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
                     boxId++;
                 }
             }
@@ -94,6 +93,9 @@ public class Preprocessor {
         System.err.println("Number of goals: "+goals.size());
         System.err.println("Number of boxes: "+boxes.size());
 
+        level.setBoxes(boxes);
+        level.setGoals(goals);
+
         findCorridors();
         printCorridorMap();
         return agents;
@@ -102,6 +104,7 @@ public class Preprocessor {
     public Cell[][] getMap(){
         return map;
     }
+    public Level getLevel() { return level; }
 
     public ArrayList<Agent> getAgents(){
         return agents;
