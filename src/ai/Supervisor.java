@@ -16,7 +16,7 @@ public class Supervisor extends Thread {
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
     public final Queue<Message> supervisorMsgQueue;
     private Cell[][] map;
-    private HashMap<Point,Character> goals;
+    private HashMap<Integer,Goal> goals;
     private Level level;
 
     public static void main( String[] args ) {
@@ -203,8 +203,10 @@ public class Supervisor extends Thread {
 
         try {
             p.readMap();
+
             level = new Level(p.getMap());
             level.setAgents(p.getAgents());
+            level.setGraph(p.getGraph());
 
             agents = p.getAgents();
 
@@ -223,7 +225,7 @@ public class Supervisor extends Thread {
        return map;
     }
 
-    public HashMap<Point, Character> getGoals() {
+    public HashMap<Integer, Goal> getGoals() {
         return goals;
     }
 
