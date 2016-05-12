@@ -90,6 +90,7 @@ public class Preprocessor {
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
+                    map[levelLine][i] = new Cell(CellType.EMPTY, boxId);
                     boxId++;
                 }
             }

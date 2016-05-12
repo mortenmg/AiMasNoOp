@@ -16,11 +16,15 @@ public class AStarPlanner implements Planner {
     public HashSet<State> explored;
     public State initialState = null;
 
+    private Task task;
+
     private Supervisor supervisor;
 
-    public AStarPlanner(){
+    public AStarPlanner(Task task){
         super();
         supervisor = Supervisor.getInstance();
+        this.task = task;
+
     }
 
     // The planner generates a plan
@@ -32,6 +36,7 @@ public class AStarPlanner implements Planner {
         // Creates the initial state with the boxes as they are in the moment
         this.initialState = initialState;
         initialState.setBoxes(supervisor.getLevel().getBoxes());
+        initialState.setTask(task);
 
 
         int iterations = 0;

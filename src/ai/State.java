@@ -12,11 +12,13 @@ public class State {
 	public int agentRow;
 	public int agentCol;
 
-	private int boxId;
+	private Task task;
 
 	public HashMap<Integer, Box> getBoxes() {
 		return boxes;
 	}
+
+	public void setTask(Task task) { this.task = task; }
 
 	// public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];
 	private HashMap<Integer,Box> boxes = new HashMap<>();
@@ -73,7 +75,7 @@ public class State {
 						n.agentCol = newAgentCol;
 
 						// update boxes
-						n.boxes.get(boxId).point = new Point(newBoxRow,newBoxCol);
+						n.boxes.get(task.getBoxId()).point = new Point(newBoxRow,newBoxCol);
 
 						expandedStates.add( n );
 					}
@@ -91,7 +93,7 @@ public class State {
 						n.agentCol = newAgentCol;
 
 						// update boxes
-						n.boxes.get(boxId).point = new Point(this.agentRow, this.agentCol);
+						n.boxes.get(task.getBoxId()).point = new Point(this.agentRow, this.agentCol);
 
 						expandedStates.add( n );
 					}
@@ -115,7 +117,7 @@ public class State {
      * @return
      */
 	private boolean boxAt( int row, int col ) {
-		Box myBox = boxes.get(boxId);
+		Box myBox = boxes.get(task.getBoxId());
 		return myBox.point.equals(new Point(row,col));
 	}
 

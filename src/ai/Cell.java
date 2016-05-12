@@ -7,6 +7,7 @@ public class Cell {
 
     private int corridor = 0;     // Int to define if its part of a corridor
     private CellType type = CellType.EMPTY; // The cell can have a type default is empty;
+    private Integer boxId;
 
 
     /**
@@ -22,17 +23,29 @@ public class Cell {
      */
     Cell(CellType type) {
         this.type = type;
+        this.boxId = null;
     }
 
     /**
-     * @return
+     * Constructor for setting
+     * @param type
+     * @param boxId
+     */
+    public Cell(CellType type, int boxId) {
+        this.type = type;
+        this.boxId = boxId;
+    }
+
+    /**
+     * @return boolean
      * @author Rasmus
      */
-    /*
     public boolean hasBox() {
-        return cell != '+' && box != '0';
+        if (type == CellType.EMPTY && boxId!=null)
+            return true;
+        return false;
     }
-    */
+
     @Override
     public String toString() {
         return "This cell is a special cell";

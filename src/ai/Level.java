@@ -12,7 +12,7 @@ public class Level {
 
     private final Cell[][] map;
     private ArrayList<Agent> agents = new ArrayList<>();
-    private HashMap<Point,Goal> goals = new HashMap<>();
+    private HashMap<Integer,Goal> goals = new HashMap<>();
     private HashMap<Integer,Box> boxes = new HashMap<>();
 
     private ArrayList<Node> graph = new ArrayList<>();
@@ -25,7 +25,7 @@ public class Level {
         this.agents = agents;
     }
 
-    public void setGoals(HashMap<Point,Goal> goals) { this.goals = goals; }
+    public void setGoals(HashMap<Integer,Goal> goals) { this.goals = goals; }
     public void setBoxes(HashMap<Integer,Box> boxes) { this.boxes = boxes; }
 
     public HashMap<Integer, Box> getBoxes() {
