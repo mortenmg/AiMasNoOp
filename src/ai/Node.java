@@ -21,14 +21,14 @@ public class Node {
 
     private String id;
     private Point coord;
-    private NodeType type;
+    private CellType type;
     private LinkedList<Edge> neighboors;
     private int cost;
     private HashMap<String,Integer> goalPathCosts;
 
     private Node previous;
 
-    public Node(Point coord, NodeType type){
+    public Node(Point coord, CellType type){
         this.coord = coord;
         this.type = type;
         this.neighboors = new LinkedList<>();
@@ -44,7 +44,7 @@ public class Node {
         this.neighboors.push(e);
     }
 
-    public NodeType getType() {
+    public CellType getType() {
         return type;
     }
 
@@ -58,10 +58,6 @@ public class Node {
 
     public void setCost(int cost) {
         this.cost = cost;
-    }
-
-    public Node getPrevious() {
-        return previous;
     }
 
     public void addGoalPath(Integer cost, String goalId){
