@@ -134,7 +134,9 @@ public class Level {
     public HashMap<Integer, Box> getBoxes() {
         HashMap<Integer,Box> tmpBoxes = new HashMap<>();
 
-        for(Box b: boxes.values()){
+        //for(int boxId : intBoxes)
+
+        for(Box b: intBoxes.values()){
             tmpBoxes.put(b.id, new Box(b));
         }
         return tmpBoxes;

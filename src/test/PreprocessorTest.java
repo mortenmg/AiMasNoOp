@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class PreprocessorTest {
     @Test
     public void testReadMap() throws Exception {
-        Preprocessor p = new Preprocessor(new BufferedReader( new InputStreamReader( System.in ) ));
+        //Preprocessor p = new Preprocessor(new BufferedReader( new InputStreamReader( System.in ) ));
         assertEquals(0,0);
     }
 
