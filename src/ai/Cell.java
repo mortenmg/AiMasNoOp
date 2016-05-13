@@ -81,8 +81,7 @@ public class Cell {
     }
 
     public boolean isFree() {
-
-        return true;
+        return isFree;
     }
 }
 

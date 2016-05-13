@@ -34,6 +34,14 @@ public class Agent extends Thread {
         this.plan = new LinkedList<>();
     }
 
+    public Point getPosition() {
+        return position;
+    }
+
+    public void setPosition(Point position) {
+        this.position = position;
+    }
+
     public String act() {
         Random rand = new Random();
         return Command.every[rand.nextInt( Command.every.length )].toString();
@@ -162,5 +170,11 @@ public class Agent extends Thread {
 
     public int getAgentId() { return id; }
 
+    public GoalTask getCurrentTask() {
+        return currentTask;
+    }
 
+    public String getColor() {
+        return color;
+    }
 }
