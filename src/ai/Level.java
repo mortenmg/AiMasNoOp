@@ -9,7 +9,6 @@ import java.util.HashMap;
  */
 
 
-
 public class Level {
 
     //This is the static map, contains only static map information.
@@ -125,7 +124,9 @@ public class Level {
 
     public void setGoals(HashMap<Integer,Goal> goals) { this.goals = goals; }
 
-    public void setBoxes(HashMap<Point,Box> boxes) { this.boxes = boxes; }
+    public Goal getGoalWithId(int goalId) {
+        return goals.get(goalId);
+    }
 
     /**
      * copy of boxes. So that level have the actual state of the boxes
@@ -163,6 +164,10 @@ public class Level {
     }
 
     public void setIntBoxes(HashMap<Integer, Box> intBoxes) {
+
         this.intBoxes = intBoxes;
+        for(Box b: this.intBoxes.values()){
+            this.boxes.put(new Point(b.location),b);
+        }
     }
 }
