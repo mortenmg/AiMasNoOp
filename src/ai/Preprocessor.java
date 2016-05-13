@@ -19,7 +19,7 @@ public class Preprocessor {
     private ArrayList<String> mapLines;
 
     private HashMap<Integer, Goal> goals = new HashMap<>();
-    private HashMap<Integer, Box> boxes = new HashMap<>();
+    private HashMap<Point, Box> boxes = new HashMap<>();
     private ArrayList<Agent> agents = new ArrayList<>();
 
 
@@ -88,7 +88,7 @@ public class Preprocessor {
                     map[levelLine][i] = new Cell(CellType.GOAL);
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
-                    boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
+                    boxes.put(new Point(levelLine, i), new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
                     map[levelLine][i] = new Cell(CellType.EMPTY, boxId);
                     boxId++;
                 } else {

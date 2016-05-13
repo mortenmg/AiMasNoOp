@@ -113,7 +113,7 @@ public class State {
 		return expandedStates;
 	}
 
-	private boolean cellIsFree( int row, int col ) {
+	private boolean cellIsFree( int row, int col ) { //I dont think you can do this! map does not(should not) contain box information. TODO
 		return ! Supervisor.getInstance().getMap()[row][col].hasBox() && Supervisor.getInstance().getMap()[row][col].getType()!=CellType.WALL;
 	}
 
@@ -146,7 +146,7 @@ public class State {
 		State copy = new State( this );
 		copy.setBoxes((HashMap<Integer, Box>) boxes.clone());
 		copy.setTask(this.task);
-		// TODO: do a proper deepclone of the boxes array.
+		// TODO: do a proper deepclone of the boxes array. - See level, it is kinda implemented there
 		return copy;
 	}
 

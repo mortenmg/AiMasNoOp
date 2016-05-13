@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * Created by hvingelby on 4/5/16.
  */
 public class Supervisor extends Thread {
-    private  List< Agent > agents = new ArrayList<>();
+    private List< Agent > agents = new ArrayList<>();
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
     public final Queue<Message> supervisorMsgQueue;
     private Cell[][] map;
@@ -51,9 +51,10 @@ public class Supervisor extends Thread {
                 }
             }
 
-            getActions();
-            validateActions();
-            sendActions();
+            ArrayList<Command> validCommands = getValidActions();
+
+            sendActions(validCommands);
+            level.updateLevelWithCommands();
         }
 
 
@@ -173,39 +174,39 @@ public class Supervisor extends Thread {
         }
     }
 
-
+    //TODO: Handle case where agent does not have plan yet!
     private ArrayList<Command> getValidActions() {
 
         ArrayList<Command> cmds = new ArrayList<>();
 
         for (Agent a: agents){
             Command c = a.peekTopCommand();
-            if (isCommandValidForAgent(c, a)){
-                cmds.add(a.pollCommand());
+            if (level.isMoveValidForAgent(c, a)){
+                cmds.add(a.getAgentId(),a.pollCommand());
             }else{
-                //Handle invalid command!
+                cmds.add(a.getAgentId(),null);
+                //Handle invalid command! - Send message to agent
             }
         }
+        return cmds;
     }
 
-    private boolean isCommandValidForAgent(Command c, Agent a) {
-        if(c.actType == Command.type.Move){
-            this.getLevel().isCellFreeInDirection(a.g)
-        }if(c.actType == Command.type.Push){
-
-        }if(c.actType == Command.type.Pull){
-
-        }
-    }
-
-    private boolean sendActions() {
+    private boolean sendActions(ArrayList<Command> commands) {
         String jointAction = "[";
 
         // In this loop we are sending the actions that is waiting to be sent.
         for ( int i = 0; i < agents.size() - 1; i++ )
             jointAction += agents.get( i ).act() + ",";
 
-        jointAction += agents.get( agents.size() - 1 ).act() + "]";
+        for(Command cmd: commands){
+            if(cmd != null)
+                jointAction += cmd.toString() + ",";
+            else
+                jointAction += "NoOp" + ",";
+        }
+
+        jointAction = jointAction.substring(0,jointAction.length()-1);
+        jointAction +=  "]";
 
         // Place message in buffer
         System.out.println( jointAction );
