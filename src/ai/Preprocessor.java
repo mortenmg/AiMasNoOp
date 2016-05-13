@@ -110,7 +110,7 @@ public class Preprocessor {
         System.err.println("Number of boxes: " + boxes.size());
 
         level = new Level(map);
-        level.setBoxes(boxes);
+        level.setIntBoxes(boxes);
         level.setGoals(goals);
 
         printCorridorMap();
@@ -180,7 +180,7 @@ public class Preprocessor {
 //                System.err.println("Trying to match goal(" + g.letter + ") with box(" + b.letter + ")");
                 Point p = b.location;
                 if (Character.toLowerCase(b.letter) == g.letter){
-                    System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.point);
+                    System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.location);
 //                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
                     int c = (int)Math.sqrt(Math.pow((p.x-g.point.getX()),2)+Math.pow((p.y-g.point.getY()),2));
                     System.err.println("Price from goal("+ g.letter + ") to box(" +b.id +", "+ b.letter +") is " + c);
