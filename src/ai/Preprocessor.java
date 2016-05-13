@@ -1,10 +1,9 @@
 package ai;
 
-import com.sun.corba.se.impl.orbutil.graph.Graph;
-
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
 
@@ -94,11 +93,11 @@ public class Preprocessor {
                     map[x][levelLine] = new Cell(CellType.WALL);
                 } else if ('a' <= id && id <= 'z') { //If goal
                     goals.put(goalId, new Goal(goalId, id, new Point(x, levelLine)));
-                    map[x][levelLine] = new Cell(CellType.GOAL);
+                    map[x][levelLine] = new Cell(CellType.GOAL, goalId);
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
-                    map[x][levelLine] = new Cell(CellType.EMPTY, boxId);
+                    map[x][levelLine] = new Cell(CellType.EMPTY);
                     boxId++;
                 } else {
                     map[x][levelLine] = new Cell(CellType.EMPTY);
@@ -117,13 +116,24 @@ public class Preprocessor {
         printCorridorMap();
 
         createGraphFromMap();
+        findCost();
         findCorridors();
-        findGoalTasks();
+//        getGoalTasks();  //Called from supervisor
 
         printCorridorMap(cor);
 
 //        sortAgents();
         return agents;
+    }
+
+    private void findCost() {
+        ArrayList<Node> allNodes = new ArrayList<>();
+
+        for (ArrayList<Node> ls:graph) {
+            allNodes.addAll(ls);
+        }
+        Iterator goalIterator = goals.entrySet().iterator();
+
     }
 
     private void sortAgents() {
@@ -148,7 +158,7 @@ public class Preprocessor {
     }
 
     //Find and prioritize the initial goal tasks of the map
-    private PriorityQueue<GoalTask> findGoalTasks() {
+    public PriorityQueue<GoalTask> getGoalTasks() {
         PriorityQueue<GoalTask> goalTasks = new PriorityQueue<GoalTask>();
 
         //Iterate through hashmap of goals
@@ -171,8 +181,9 @@ public class Preprocessor {
                 Point p = b.point;
                 if (Character.toLowerCase(b.letter) == g.letter){
                     System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.point);
-                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
-                    System.err.println("Price from goal("+ g.letter + ") to box(" + b.letter +") is " + c);
+//                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
+                    int c = (int)Math.sqrt(Math.pow((p.x-g.point.getX()),2)+Math.pow((p.y-g.point.getY()),2));
+                    System.err.println("Price from goal("+ g.letter + ") to box(" +b.id +", "+ b.letter +") is " + c);
                     if (c < cost ){
                         boxBest = b;
                         cost = c;
@@ -188,19 +199,10 @@ public class Preprocessor {
             goalIterator.remove(); // avoids a ConcurrentModificationException
         }
 
-        //Loop through goals and find a box for each goal
-//        for (int goalKey : goals.keySet()) {
-//            for (int boxKey : boxes.keySet()) {
-//                char goalLetter = goals.get(goalKey).letter;
-//                char boxLetter = boxes.get(boxKey).letter;
-//                if (goalLetter == Character.toLowerCase(boxLetter)) {
-//                    goalTasks.add(new GoalTask(0,0,0)); //TODO add arguments to fit goalTask class
-//                }
-//            }
-//        }
         System.err.println("goalTasks Printout:");
         for (GoalTask gt: goalTasks) {
-            System.err.println("GoalTasks - Task " + gt.getTaskId() + " GoalID: " + gt.getGoalId() + " BoxID: " + gt.getBoxId());
+            Goal g = goals.get(gt.getGoalId());
+            System.err.println("GoalTasks - Task " + gt.getTaskId() + " Goal: " + gt.getGoalId() + " BoxID: " + gt.getBoxId());
         }
         //TODO Implement priority
         return goalTasks;
@@ -393,6 +395,3 @@ public class Preprocessor {
         return graph;
     }
 }
-
-
-
