@@ -51,7 +51,6 @@ public class Agent extends Thread {
         synchronized (this.plan) {
             for (ai.State n : plan) {
                 this.plan.push(n.getAction());
-
             }
         }
     }
@@ -67,6 +66,7 @@ public class Agent extends Thread {
             return this.plan.peek();
         }
     }
+
 
     @Override
     public void run() {
@@ -85,9 +85,7 @@ public class Agent extends Thread {
 
         //ai.Agent loop
         while(!terminateFlag) {
-
             handleMessage(getMessage());
-
         }
         System.err.println(getAgentId() + " terminated");
 
