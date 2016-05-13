@@ -55,7 +55,9 @@ public class Level {
                             isValid = true;
                             a.setPosition(new Point(newAgentColPull, newAgentRowPull)); //update agent position
                             boxes.remove(boxPoint);
-                            boxes.put(new Point(a.getPosition().x,a.getPosition().y),b1); // update box position
+                            Point newBoxLocation = new Point(a.getPosition().x,a.getPosition().y);
+                            b1.setLocation(newBoxLocation);
+                            boxes.put(newBoxLocation,b1); // update box position
                         }
                     }
                 }
@@ -69,6 +71,7 @@ public class Level {
                 int newBoxCol = a.getPosition().x + dirToColChange(c.dir2);
 
                 Point boxPointPush = new Point(boxColPush, boxRowPush);
+                Point newBoxPos = new Point(newBoxCol, newBoxRow);
                 if (boxes.containsKey(boxPointPush)) { //Check if there is box to move
                     Box b2 = boxes.get(boxPointPush); //Get box
                     if (b2.color == a.getColor()) { //Check if agent can move
@@ -76,7 +79,8 @@ public class Level {
                             isValid = true;
                             a.setPosition(boxPointPush); //Update agent position to where box were
                             boxes.remove(boxPointPush);
-                            boxes.put(new Point(newBoxCol, newBoxRow), b2);
+                            b2.setLocation(newBoxPos);
+                            boxes.put(newBoxPos, b2);
                         }
                     }
                 }

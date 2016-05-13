@@ -115,6 +115,12 @@ public class Preprocessor {
         printCorridorMap();
 
         createGraphFromMap();
+
+        for(Goal g: goals.values()){
+            Point goalLocation = g.point;
+
+        }
+
         findCorridors();
         findGoalTasks();
 
@@ -348,10 +354,14 @@ public class Preprocessor {
             this.graph.add(new ArrayList<>());
             for (int y = 0; y < map[y].length; y++) {
                 Node n = new Node(new Point(x, y), this.map[x][y].getType());
+                if(this.map[x][y].getType() == CellType.GOAL){
+                    n.setId(this.map[x][y].getGoalId());
+                }
                 graph.get(x).add(n); //Add to graph
             }
         }
-        System.err.print("createGRaphFromMap graph size: " + graph.size() + ", " + graph.get(0).size());
+
+        System.err.print("createGraphFromMap graph size: " + graph.size() + ", " + graph.get(0).size());
 
         //Make edges
         for (int y = 0; y < this.map.length; y++) {
