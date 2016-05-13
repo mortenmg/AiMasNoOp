@@ -51,8 +51,8 @@ public class Supervisor extends Thread {
                 }
             }
 
-            getActions();
-            validateActions();
+//            getActions();
+//            validateActions();
             sendActions();
         }
 
@@ -186,16 +186,18 @@ public class Supervisor extends Thread {
                 //Handle invalid command!
             }
         }
+        return cmds;
     }
 
     private boolean isCommandValidForAgent(Command c, Agent a) {
         if(c.actType == Command.type.Move){
-            this.getLevel().isCellFreeInDirection(a.g)
+            this.getLevel().isCellFreeInDirection(1,1, Command.dir.E);
         }if(c.actType == Command.type.Push){
 
         }if(c.actType == Command.type.Pull){
 
         }
+        return false;
     }
 
     private boolean sendActions() {

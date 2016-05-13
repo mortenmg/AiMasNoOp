@@ -23,20 +23,17 @@ public class Level {
 
     public boolean isCellFreeInDirection(int x, int y, Command.dir dir){
         switch (dir){//TODO care for index out of bounds!
-            case dir.E:
+            case E:
                 return map[x][y+1].isFree();
-                break;
-            case dir.W:
+            case W:
                 return map[x][y-1].isFree();
-                break;
-            case dir.N:
+            case N:
                 return map[x+1][y].isFree();
-                break;
-            case dir.S:
+            case S:
                 return map[x-1][y].isFree();
-                break;
         }
 
+        return false;
     }
 
     public void setAgents(ArrayList<Agent> agents) {
@@ -59,7 +56,7 @@ public class Level {
     }
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
-
+        System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
         if(graph.size() > x){
             if(graph.get(x).size() > y){
                 return graph.get(x).get(y).getGoalPathsCost(goalId);

@@ -1,10 +1,14 @@
 package ai;
 
+import com.sun.corba.se.impl.orbutil.graph.Graph;
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+
+import static java.lang.Character.MAX_VALUE;
 
 /**
  * Created by  on 4/5/16.
@@ -15,11 +19,13 @@ public class Preprocessor {
     int mapWidth = 0;
 
     private char[][] walls;
+    private int [][] cor;
 
     private ArrayList<String> mapLines;
 
     private HashMap<Integer, Goal> goals = new HashMap<>();
     private HashMap<Integer, Box> boxes = new HashMap<>();
+    private HashMap<Point, Integer> corridors = new HashMap<>();
     private ArrayList<Agent> agents = new ArrayList<>();
 
 
@@ -58,44 +64,47 @@ public class Preprocessor {
         //Read maplines into a buffer to optimize the seize of the variables holding the map
         while (!line.equals("")) {
             mapLines.add(line);
+            if (mapWidth < line.length()){
+                mapWidth = line.length();
+            }
             line = serverMessages.readLine();
         }
 
         //Setting the map size
-        mapHeight = mapLines.get(0).length();
-        mapWidth = mapLines.size();
+        mapHeight = mapLines.size();
+//        mapWidth = mapLines.get(0).length();
+        System.err.println("Map size: " + mapWidth + "," + mapHeight);
         this.walls = new char[mapWidth][mapHeight];
+        this.cor = new int[mapWidth][mapHeight];
 
-        map = new Cell[mapWidth][mapHeight];
+        this.map = new Cell[mapWidth][mapHeight];
 
         int goalId = 0;
         int boxId = 0;
 
-        System.err.println("MapSize: " + this.walls[0].length + "," + this.walls.length);
-
         // Read lines specifying level layout
         for (String ln : mapLines) {
-            for (int i = 0; i < ln.length(); i++) {
-                char id = ln.charAt(i);
+            for (int x = 0; x < ln.length(); x++) {
+                char id = ln.charAt(x);
                 if ('0' <= id && id <= '9') { //If agent
-                    agents.add(new Agent(id, colors.get(id), new Point(levelLine,i)));
-                    map[levelLine][i] = new Cell(CellType.AGENT);
+                    agents.add(new Agent(id, colors.get(id), new Point(x,levelLine)));
+                    map[x][levelLine] = new Cell(CellType.AGENT);
                 } else if (id == '+') { //If wall
-                    this.walls[levelLine][i] = id;
-                    map[levelLine][i] = new Cell(CellType.WALL);
+                    this.walls[x][levelLine] = id;
+                    map[x][levelLine] = new Cell(CellType.WALL);
                 } else if ('a' <= id && id <= 'z') { //If goal
-                    goals.put(goalId, new Goal(goalId, id, new Point(levelLine, i)));
-                    map[levelLine][i] = new Cell(CellType.GOAL);
+                    goals.put(goalId, new Goal(goalId, id, new Point(x, levelLine)));
+                    map[x][levelLine] = new Cell(CellType.GOAL);
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
-                    boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(levelLine, i)));
-                    map[levelLine][i] = new Cell(CellType.EMPTY, boxId);
+                    boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
+                    map[x][levelLine] = new Cell(CellType.EMPTY, boxId);
                     boxId++;
                 } else {
-                    map[levelLine][i] = new Cell(CellType.EMPTY);
+                    map[x][levelLine] = new Cell(CellType.EMPTY);
                 }
             }
-            levelLine++;
+            levelLine++; //Y-coordinate
         }
 
         System.err.println("Number of goals: " + goals.size());
@@ -105,11 +114,15 @@ public class Preprocessor {
         level.setBoxes(boxes);
         level.setGoals(goals);
 
-        findCorridors();
         printCorridorMap();
-        //createGraphFromMap();
 
-        sortAgents();
+        createGraphFromMap();
+        findCorridors();
+        findGoalTasks();
+
+        printCorridorMap(cor);
+
+//        sortAgents();
         return agents;
     }
 
@@ -118,9 +131,9 @@ public class Preprocessor {
         ArrayList<Agent> tmpagents = new ArrayList<>();
         Agent a = agents.get(0);
 
-        for (Agent a: agents ) {
-            tmpagents.add(a.getAgentId(), a);
-        }
+//        for (Agent a: agents ) {
+//            tmpagents.add(a.getAgentId(), a);
+//        }
 
         agents = tmpagents;
     }
@@ -137,15 +150,57 @@ public class Preprocessor {
     //Find and prioritize the initial goal tasks of the map
     private PriorityQueue<GoalTask> findGoalTasks() {
         PriorityQueue<GoalTask> goalTasks = new PriorityQueue<GoalTask>();
-        //Loop through goals and find a box for each goal
-        for (int goalKey : goals.keySet()) {
-            for (int boxKey : boxes.keySet()) {
-                char goalLetter = goals.get(goalKey).letter;
-                char boxLetter = boxes.get(boxKey).letter;
-                if (goalLetter == Character.toLowerCase(boxLetter)) {
-                    goalTasks.add(new GoalTask(0,0,0)); //TODO add arguments to fit goalTask class
+
+        //Iterate through hashmap of goals
+//        System.err.println("Iterator on Goals hashmap:");
+        Iterator goalIterator = goals.entrySet().iterator();
+        int goalId = 0;
+        while (goalIterator.hasNext()) {
+            Map.Entry goalPair = (Map.Entry)goalIterator.next();
+            Goal g = (Goal) goalPair.getValue();
+//            System.err.println(goalPair.getKey() + " = " + g.letter);
+            Iterator boxIterator = boxes.entrySet().iterator();
+            int cost = MAX_VALUE;
+            Box boxBest = null;
+
+            //Prioritize goals by mesuring cost of every box to one goal
+            while (boxIterator.hasNext()){
+                Map.Entry boxPair = (Map.Entry)boxIterator.next();
+                Box b = (Box) boxPair.getValue();
+//                System.err.println("Trying to match goal(" + g.letter + ") with box(" + b.letter + ")");
+                Point p = b.point;
+                if (Character.toLowerCase(b.letter) == g.letter){
+                    System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.point);
+                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
+                    System.err.println("Price from goal("+ g.letter + ") to box(" + b.letter +") is " + c);
+                    if (c < cost ){
+                        boxBest = b;
+                        cost = c;
+                    }
                 }
+                //boxIterator.remove(); // avoids a ConcurrentModificationException
             }
+            if (boxBest != null){
+                GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId);
+                goalTasks.offer(goalTask);
+                goalId++;
+            }
+            goalIterator.remove(); // avoids a ConcurrentModificationException
+        }
+
+        //Loop through goals and find a box for each goal
+//        for (int goalKey : goals.keySet()) {
+//            for (int boxKey : boxes.keySet()) {
+//                char goalLetter = goals.get(goalKey).letter;
+//                char boxLetter = boxes.get(boxKey).letter;
+//                if (goalLetter == Character.toLowerCase(boxLetter)) {
+//                    goalTasks.add(new GoalTask(0,0,0)); //TODO add arguments to fit goalTask class
+//                }
+//            }
+//        }
+        System.err.println("goalTasks Printout:");
+        for (GoalTask gt: goalTasks) {
+            System.err.println("GoalTasks - Task " + gt.getTaskId() + " GoalID: " + gt.getGoalId() + " BoxID: " + gt.getBoxId());
         }
         //TODO Implement priority
         return goalTasks;
@@ -234,9 +289,11 @@ public class Preprocessor {
         }
         if (c > (char) 0) {
             walls[x][y] = c;
+            cor[x][y] = Character.valueOf(c)-47;
             return false;
         } else {
             walls[x][y] = (char) id;
+            cor[x][y] = id-47;
             return true;
         }
     }
@@ -245,14 +302,14 @@ public class Preprocessor {
         System.err.println("ai.Corridor map print out");
         String s = "";
 
-        for (int i = 0; i < walls.length; i++) {
+        for (int i = 0; i < walls[0].length; i++) {
             s = "";
             if (walls[i][0] < ' ') //no more lines in map
                 break;
 
-            for (int j = 0; j < walls[0].length; j++) {
-                if (walls[i][j] > ' ')
-                    s = s + walls[i][j];
+            for (int j = 0; j < walls.length; j++) {
+                if (walls[j][i] > ' ')
+                    s = s + walls[j][i];
                 else
                     s = s + " ";
             }
@@ -260,6 +317,24 @@ public class Preprocessor {
         }
     }
 
+    public void printCorridorMap(int map[][]) {
+        System.err.println("Map printout");
+        String s = "";
+
+        for (int i = 0; i < map[0].length; i++) {
+            s = "";
+//            if (map[i][0] < 0) //no more lines in map
+//                break;
+
+            for (int j = 0; j < map.length; j++) {
+                if (map[j][i] > 0)
+                    s = s + map[j][i];
+                else
+                    s = s + " ";
+            }
+            System.err.println(s);
+        }
+    }
     /**
      * @return
      * @author Rasmus
@@ -269,40 +344,49 @@ public class Preprocessor {
     }
 
     public void createGraphFromMap() {
+        System.err.println ("createGraphFromMap: Size of map is " + map.length + ", "+ map[0].length);
 
         //Make Nodes
-        for (int i = 0; i < this.map.length; i++) {
+        for (int x = 0; x < this.map.length; x++) {
             this.graph.add(new ArrayList<>());
-            for (int j = 0; j < map[i].length; j++) {
-                Node n = new Node(new Point(i, j), this.map[i][j].getType());
-
-                graph.get(i).add(n); //Add to graph
+            for (int y = 0; y < map[y].length; y++) {
+                Node n = new Node(new Point(x, y), this.map[x][y].getType());
+                graph.get(x).add(n); //Add to graph
             }
         }
+        System.err.print("createGRaphFromMap graph size: " + graph.size() + ", " + graph.get(0).size());
 
         //Make edges
-        for (int i = 0; i < this.map.length; i++) {
-            for (int j = 0; j < this.map[i].length; j++) {
+        for (int y = 0; y < this.map.length; y++) {
+            for (int x = 0; x < this.map[x].length; x++) {
 
-                if (j + 1 < this.graph.get(i).size()) { //Right neighbor case
+                if (x + 1 < this.graph.get(y).size()) { //Right neighbor case
                     //if(j+1 < this.map[i].length){
-                    this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i).get(j + 1), graph.get(i).get(j)));
+                    this.graph.get(y).get(x).addNeighbor(new Edge(graph.get(y).get(x + 1), graph.get(y).get(x)));
                 }
-                if (j - 1 >= 0) { //Left neighbor case
-                    this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i).get(j - 1), graph.get(i).get(j)));
+                if (x - 1 >= 0) { //Left neighbor case
+                    this.graph.get(y).get(x).addNeighbor(new Edge(graph.get(y).get(x - 1), graph.get(y).get(x)));
                 }
-                if (i + 1 < this.graph.size()) { //Check for list below - Below neighbor case
-                    if (j < this.graph.get(i + 1).size()) { //Check if list below is bigger then current index(x-axis)
-                        this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i + 1).get(j), graph.get(i).get(j)));
+                if (y + 1 < this.graph.size()) { //Check for list below - Below neighbor case
+                    if (x < this.graph.get(y + 1).size()) { //Check if list below is bigger then current index(x-axis)
+                        this.graph.get(y).get(x).addNeighbor(new Edge(graph.get(y + 1).get(x), graph.get(y).get(x)));
                     }
                 }
-                if (i - 1 >= 0) { //Above neighbor case
-                    if (j < this.graph.get(i - 1).size()) {
-                        this.graph.get(i).get(j).addNeighbor(new Edge(graph.get(i - 1).get(j), graph.get(i).get(j)));
+                if (y - 1 >= 0) { //Above neighbor case
+                    if (x < this.graph.get(y - 1).size()) {
+                        this.graph.get(y).get(x).addNeighbor(new Edge(graph.get(y - 1).get(x), graph.get(y).get(x)));
                     }
                 }
             }
         }
+
+        // Test goal dijksta
+//        Point p = goals.get(0).point;
+//        Node n = graph.get(p.x).get(p.y);
+//        GraphToolkit.dijkstra(graph,n);
+
+        //Save the graph in Level
+        level.setGraph(graph);
     }
 
     public ArrayList<ArrayList<Node>> getGraph() {
