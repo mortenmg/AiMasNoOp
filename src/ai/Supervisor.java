@@ -51,10 +51,10 @@ public class Supervisor extends Thread {
                 }
             }
 
-            ArrayList<Command> validCommands = getValidActions();
+            ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
 
             sendActions(validCommands);
-            level.updateLevelWithCommands();
+
         }
 
 
@@ -75,7 +75,7 @@ public class Supervisor extends Thread {
             //end while
             //Final loop - Handle incoming help message and requests for new tasks
         }
-            while (sendActions());
+            //while (sendActions());
     }
 
 
@@ -193,10 +193,6 @@ public class Supervisor extends Thread {
 
     private boolean sendActions(ArrayList<Command> commands) {
         String jointAction = "[";
-
-        // In this loop we are sending the actions that is waiting to be sent.
-        for ( int i = 0; i < agents.size() - 1; i++ )
-            jointAction += agents.get( i ).act() + ",";
 
         for(Command cmd: commands){
             if(cmd != null)

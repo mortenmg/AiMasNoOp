@@ -98,19 +98,6 @@ public class Level {
         return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
     }
 
-    private Point dirAndPositionToNewPoint(Command.dir dir, Point p){
-        switch (dir) {
-            case dir.E:
-                return new Point(p.x+1,p.y);
-            case dir.W:
-                return new Point(p.x-1,p.y);
-            case dir.N:
-                return new Point(p.x,p.y-1);
-            case dir.S:
-                return new Point(p.x,p.y+1);
-        }
-    }
-
     /**
      * Checks for wall, agent and box at x,y
      * @param x
@@ -134,7 +121,6 @@ public class Level {
 
     public void setBoxes(HashMap<Point,Box> boxes) { this.boxes = boxes; }
 
-
     /**
      * copy of boxes. So that level have the actual state of the boxes
      * @return copy of boxes
@@ -157,33 +143,13 @@ public class Level {
     }
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
-
+        System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
         if(graph.size() > x){
             if(graph.get(x).size() > y){
                 return graph.get(x).get(y).getGoalPathsCost(goalId);
             }
         }
         return Integer.MAX_VALUE;
-
     }
 
-    public void updateLevelWithCommands(ArrayList<Command> commands) {
-        int agentIndex = 0;
-
-        for(Command cmd: commands){
-            if(cmd != null){
-                if(cmd.actType == Command.type.Move){ //Update agent pos
-
-
-
-                    agents.get(agentIndex).setPosition();
-                }if(cmd.actType == Command.type.Pull){ //Update agent and box pos
-
-                }if(cmd.actType == Command.type.Push){ //Update agent and box pos
-
-                }
-            }
-            agentIndex++;
-        }
-    }
 }

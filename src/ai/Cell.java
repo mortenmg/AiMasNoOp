@@ -44,7 +44,7 @@ public class Cell {
     public Cell(CellType type, int boxId) {
         this.type = type;
         this.boxId = boxId;
-        if (type == CellType.EMPTY && boxId == null){
+        if (type == CellType.EMPTY && boxId == 0){
             this.isFree = true;
         }else{
             this.isFree = false;
