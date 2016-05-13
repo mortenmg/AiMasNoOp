@@ -84,7 +84,7 @@ public class State {
 						n.agentCol = newAgentCol;
 
 						// update boxes
-						n.boxes.get(task.getBoxId()).location = new Point(newBoxRow,newBoxCol);
+						n.boxes.get(task.getBoxId()).location = new Point(newBoxCol,newBoxRow);
 
 						expandedStates.add( n );
 					}
@@ -102,7 +102,7 @@ public class State {
 						n.agentCol = newAgentCol;
 
 						// update boxes
-						n.boxes.get(task.getBoxId()).location = new Point(this.agentRow, this.agentCol);
+						n.boxes.get(task.getBoxId()).location = new Point(this.agentCol, this.agentRow);
 
 						expandedStates.add( n );
 					}
@@ -114,7 +114,12 @@ public class State {
 	}
 
 	private boolean cellIsFree( int row, int col ) { //I dont think you can do this! map does not(should not) contain box information. TODO
-		return ! Supervisor.getInstance().getLevel().getMap()[row][col].hasBox() && Supervisor.getInstance().getLevel().getMap()[row][col].getType()!=CellType.WALL;
+		for (Box b : boxes.values()) {
+			if (b.location.x == col && b.location.y == row)
+				return false;
+		}
+
+		return  Supervisor.getInstance().getLevel().getMap()[row][col].getType()!=CellType.WALL;
 	}
 
 	/**
@@ -127,7 +132,7 @@ public class State {
      */
 	private boolean boxAt( int row, int col ) {
 		Box myBox = boxes.get(task.getBoxId());
-		return myBox.location.equals(new Point(row,col));
+		return myBox.location.equals(new Point(col,row));
 	}
 
 	public void setBoxes(HashMap<Integer, Box> boxes) {

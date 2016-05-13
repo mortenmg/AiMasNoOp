@@ -83,8 +83,7 @@ public class AStarPlanner implements Planner {
      * @return Boolean
      */
     public boolean isGoalState(State state, Task task) {
-        System.err.println(state.getBoxes().isEmpty());
-        System.err.println("Is this state a goal state? Box: "+state.getBoxes().get(0).location+" Agent: "+state.agentRow+", "+state.agentCol);
+        //System.err.println("Is this state a goal state? Box: "+state.getBoxes().get(0).location+" Agent: "+state.agentRow+", "+state.agentCol);
         Box box = state.getBoxes().get(task.getBoxId());
         Goal g = Supervisor.getInstance().getLevel().getGoalWithId(task.getGoalId());
         return box.location.equals(g.point);

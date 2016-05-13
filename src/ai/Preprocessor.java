@@ -73,10 +73,10 @@ public class Preprocessor {
         mapHeight = mapLines.size();
 //        mapWidth = mapLines.get(0).length();
         System.err.println("Map size: " + mapWidth + "," + mapHeight);
-        this.walls = new char[mapWidth][mapHeight];
-        this.cor = new int[mapWidth][mapHeight];
+        this.walls = new char[mapHeight][mapWidth];
+        this.cor = new int[mapHeight][mapWidth];
 
-        this.map = new Cell[mapWidth][mapHeight];
+        this.map = new Cell[mapHeight][mapWidth];
 
         int goalId = 0;
         int boxId = 0;
@@ -86,21 +86,21 @@ public class Preprocessor {
             for (int x = 0; x < ln.length(); x++) {
                 char id = ln.charAt(x);
                 if ('0' <= id && id <= '9') { //If agent
-                    agents.add(new Agent(id, colors.get(id), new Point(x,levelLine)));
-                    map[x][levelLine] = new Cell(CellType.AGENT);
+                    agents.add(new Agent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
+                    map[levelLine][x] = new Cell(CellType.AGENT);
                 } else if (id == '+') { //If wall
-                    this.walls[x][levelLine] = id;
-                    map[x][levelLine] = new Cell(CellType.WALL);
+                    this.walls[levelLine][x] = id;
+                    map[levelLine][x] = new Cell(CellType.WALL);
                 } else if ('a' <= id && id <= 'z') { //If goal
                     goals.put(goalId, new Goal(goalId, id, new Point(x, levelLine)));
-                    map[x][levelLine] = new Cell(CellType.GOAL, goalId);
+                    map[levelLine][x] = new Cell(CellType.GOAL, goalId);
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
-                    map[x][levelLine] = new Cell(CellType.EMPTY);
+                    map[levelLine][x] = new Cell(CellType.EMPTY);
                     boxId++;
                 } else {
-                    map[x][levelLine] = new Cell(CellType.EMPTY);
+                    map[levelLine][x] = new Cell(CellType.EMPTY);
                 }
             }
             levelLine++; //Y-coordinate
@@ -108,19 +108,20 @@ public class Preprocessor {
 
         System.err.println("Number of goals: " + goals.size());
         System.err.println("Number of boxes: " + boxes.size());
+        System.err.println("Rows: "+map.length+" Cols: "+map[0].length);
 
         level = new Level(map);
         level.setIntBoxes(boxes);
         level.setGoals(goals);
 
-        printCorridorMap();
+        //printCorridorMap();
 
         createGraphFromMap();
         findCost();
         findCorridors();
-//        getGoalTasks();  //Called from supervisor
+        getGoalTasks();  //Called from supervisor
 
-        printCorridorMap(cor);
+        //printCorridorMap(cor);
 
 //        sortAgents();
         return agents;
@@ -136,7 +137,7 @@ public class Preprocessor {
         while(goalIterator.hasNext()){
             Map.Entry goalPair = (Map.Entry)goalIterator.next();
             Goal g = (Goal) goalPair.getValue();
-            Node n = graph.get(g.point.x).get(g.point.y);
+            Node n = graph.get(g.point.y).get(g.point.x);
             GraphToolkit.dijkstra(allNodes,n);
             System.err.println("dikjstra: "+ n.getId());
         }
@@ -201,7 +202,6 @@ public class Preprocessor {
                 goalTasks.offer(goalTask);
                 goalId++;
             }
-            goalIterator.remove(); // avoids a ConcurrentModificationException
         }
 
         System.err.println("goalTasks Printout:");
@@ -309,12 +309,12 @@ public class Preprocessor {
         System.err.println("ai.Corridor map print out");
         String s = "";
 
-        for (int i = 0; i < walls[0].length; i++) {
+        for (int i = 0; i < walls.length; i++) {
             s = "";
             if (walls[i][0] < ' ') //no more lines in map
                 break;
 
-            for (int j = 0; j < walls.length; j++) {
+            for (int j = 0; j < walls[0].length; j++) {
                 if (walls[j][i] > ' ')
                     s = s + walls[j][i];
                 else
@@ -351,17 +351,17 @@ public class Preprocessor {
     }
 
     public void createGraphFromMap() {
-        System.err.println ("createGraphFromMap: Size of map is " + map.length + ", "+ map[0].length);
+        System.err.println ("createGraphFromMap: Size of map is " + map[0].length + ", "+ map.length);
 
         //Make Nodes
-        for (int x = 0; x < this.map.length; x++) {
+        for (int y = 0; y < this.map.length; y++) {
             this.graph.add(new ArrayList<>());
-            for (int y = 0; y < map[y].length; y++) {
-                Node n = new Node(new Point(x, y), this.map[x][y].getType());
-                if (this.map[x][y].getType() == CellType.GOAL){
-                    n.setId(this.map[x][y].getGoalId());
+            for (int x = 0; x < map[y].length; x++) {
+                Node n = new Node(new Point(x, y), this.map[y][x].getType());
+                if (this.map[y][x].getType() == CellType.GOAL){
+                    n.setId(this.map[y][x].getGoalId());
                 }
-                graph.get(x).add(n); //Add to graph
+                graph.get(y).add(n); //Add to graph
             }
         }
 
@@ -369,10 +369,9 @@ public class Preprocessor {
 
         //Make edges
         for (int y = 0; y < this.map.length; y++) {
-            for (int x = 0; x < this.map[x].length; x++) {
+            for (int x = 0; x < this.map[y].length; x++) {
 
                 if (x + 1 < this.graph.get(y).size()) { //Right neighbor case
-                    //if(j+1 < this.map[i].length){
                     this.graph.get(y).get(x).addNeighbor(new Edge(graph.get(y).get(x + 1), graph.get(y).get(x)));
                 }
                 if (x - 1 >= 0) { //Left neighbor case

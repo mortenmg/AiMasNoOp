@@ -16,7 +16,7 @@ public class Cell {
     Cell(int corridor, CellType type) {
         this.corridor = corridor;
         this.type = type;
-        if (type == CellType.EMPTY){
+        if (type == CellType.EMPTY || type == CellType.GOAL){
             this.isFree = true;
         }else{
             this.isFree = false;
@@ -29,7 +29,7 @@ public class Cell {
     Cell(CellType type) {
         this.type = type;
         this.goalId = null;
-        if (type == CellType.EMPTY && goalId == null){
+        if ((type == CellType.EMPTY || type == CellType.GOAL)){
             this.isFree = true;
         }else{
             this.isFree = false;
@@ -44,21 +44,11 @@ public class Cell {
     public Cell(CellType type, int goalId) {
         this.type = type;
         this.goalId = goalId;
-        if (type == CellType.EMPTY && goalId == 0){
+        if ((type == CellType.EMPTY || type == CellType.GOAL)){
             this.isFree = true;
         }else{
             this.isFree = false;
         }
-    }
-
-    /**
-     * @return boolean
-     * @author Rasmus
-     */
-    public boolean hasBox() {
-        if (type == CellType.EMPTY && goalId!=null)
-            return true;
-        return false;
     }
 
     @Override

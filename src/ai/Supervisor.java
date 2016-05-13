@@ -37,7 +37,10 @@ public class Supervisor extends Thread {
             agent.start();
         }
 
+        goalCount = 1;
+
         while(goalCount > 0){
+            System.err.println("In the while loop");
             for (Agent agent: agents) {
                 if(!agent.isWorking()){
                     //Assign task to agent!
@@ -174,7 +177,9 @@ public class Supervisor extends Thread {
 
         for (Agent a: agents){
             Command c = a.peekTopCommand();
+            System.err.println(c);
             if (level.isMoveValidForAgent(c, a)){
+                System.err.println("Move "+c+" is valid");
                 cmds.add(a.getAgentId(),a.pollCommand());
             }else{
                 cmds.add(a.getAgentId(),null);
@@ -198,6 +203,7 @@ public class Supervisor extends Thread {
         jointAction +=  "]";
 
         // Place message in buffer
+        System.err.println( jointAction );
         System.out.println( jointAction );
 
         // Flush buffer

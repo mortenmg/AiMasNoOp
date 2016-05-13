@@ -25,7 +25,7 @@ public class Agent extends Thread {
     private boolean terminateFlag = false;
     private Planner planner;
 
-    public Agent( char id, String color, Point position ) {
+    public Agent( int id, String color, Point position ) {
         this.id = id;
         this.position = position;
         this.color = color;
@@ -50,7 +50,7 @@ public class Agent extends Thread {
     private void addPlan(LinkedList<ai.State> plan){
         synchronized (this.plan) {
             for (ai.State n : plan) {
-                this.plan.push(n.getAction());
+                this.plan.add(n.getAction());
             }
         }
     }
@@ -80,8 +80,8 @@ public class Agent extends Thread {
         for (ai.State state : states) {
             System.err.println(state.action);
         }
-
-        addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
+        addPlan(states);
+        //addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
 
         //ai.Agent loop
         while(!terminateFlag) {
