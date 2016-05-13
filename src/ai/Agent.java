@@ -51,7 +51,6 @@ public class Agent extends Thread {
         synchronized (this.plan) {
             for (ai.State n : plan) {
                 this.plan.push(n.getAction());
-
             }
         }
     }
@@ -68,6 +67,7 @@ public class Agent extends Thread {
         }
     }
 
+
     @Override
     public void run() {
         System.err.println("Hi from agent "+id);
@@ -76,6 +76,7 @@ public class Agent extends Thread {
         ai.State s = new ai.State(null);
         LinkedList<ai.State> states = planner.generatePlan(s, new GoalTask(0, 0, 0));
 
+        // Just printing the plans actions
         for (ai.State state : states) {
             System.err.println(state.action);
         }
@@ -84,9 +85,7 @@ public class Agent extends Thread {
 
         //ai.Agent loop
         while(!terminateFlag) {
-
             handleMessage(getMessage());
-
         }
         System.err.println(getAgentId() + " terminated");
 

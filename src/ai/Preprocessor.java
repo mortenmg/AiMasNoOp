@@ -110,7 +110,7 @@ public class Preprocessor {
         System.err.println("Number of boxes: " + boxes.size());
 
         level = new Level(map);
-//        level.setBoxes(boxes);
+        level.setIntBoxes(boxes);
         level.setGoals(goals);
 
         printCorridorMap();
@@ -118,7 +118,7 @@ public class Preprocessor {
         createGraphFromMap();
         findCost();
         findCorridors();
-        getGoalTasks();  //Called from supervisor
+//        getGoalTasks();  //Called from supervisor
 
         printCorridorMap(cor);
 
@@ -358,7 +358,6 @@ public class Preprocessor {
         for (int x = 0; x < this.map.length; x++) {
             this.graph.add(new ArrayList<>());
             for (int y = 0; y < map[y].length; y++) {
-
                 Node n = new Node(new Point(x, y), this.map[x][y].getType());
                 if (this.map[x][y].getType() == CellType.GOAL){
                     n.setId(this.map[x][y].getGoalId());

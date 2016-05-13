@@ -114,7 +114,7 @@ public class State {
 	}
 
 	private boolean cellIsFree( int row, int col ) { //I dont think you can do this! map does not(should not) contain box information. TODO
-		return ! Supervisor.getInstance().getMap()[row][col].hasBox() && Supervisor.getInstance().getMap()[row][col].getType()!=CellType.WALL;
+		return ! Supervisor.getInstance().getLevel().getMap()[row][col].hasBox() && Supervisor.getInstance().getLevel().getMap()[row][col].getType()!=CellType.WALL;
 	}
 
 	/**

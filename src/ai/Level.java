@@ -19,6 +19,8 @@ public class Level {
 
     //This data structure is updated when a box is moved. e.i. a push or pull action is send to the server.
     private HashMap<Point,Box> boxes = new HashMap<>();
+    private HashMap<Integer,Box> intBoxes = new HashMap<>();
+
     private ArrayList<Agent> agents = new ArrayList<>();
 
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
@@ -152,4 +154,11 @@ public class Level {
         return Integer.MAX_VALUE;
     }
 
+    public Cell[][] getMap() {
+        return map;
+    }
+
+    public void setIntBoxes(HashMap<Integer, Box> intBoxes) {
+        this.intBoxes = intBoxes;
+    }
 }
