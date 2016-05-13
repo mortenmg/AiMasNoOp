@@ -84,7 +84,7 @@ public class State {
 						n.agentCol = newAgentCol;
 
 						// update boxes
-						n.boxes.get(task.getBoxId()).point = new Point(newBoxRow,newBoxCol);
+						n.boxes.get(task.getBoxId()).location = new Point(newBoxRow,newBoxCol);
 
 						expandedStates.add( n );
 					}
@@ -102,7 +102,7 @@ public class State {
 						n.agentCol = newAgentCol;
 
 						// update boxes
-						n.boxes.get(task.getBoxId()).point = new Point(this.agentRow, this.agentCol);
+						n.boxes.get(task.getBoxId()).location = new Point(this.agentRow, this.agentCol);
 
 						expandedStates.add( n );
 					}
@@ -127,7 +127,7 @@ public class State {
      */
 	private boolean boxAt( int row, int col ) {
 		Box myBox = boxes.get(task.getBoxId());
-		return myBox.point.equals(new Point(row,col));
+		return myBox.location.equals(new Point(row,col));
 	}
 
 	public void setBoxes(HashMap<Integer, Box> boxes) {
@@ -190,7 +190,7 @@ public class State {
 			return false;
 		}
 		for (int key : boxes.keySet()) {
-			if(!boxes.get(key).point.equals(other.boxes.get(key).point) ||
+			if(!boxes.get(key).location.equals(other.boxes.get(key).location) ||
 					!(boxes.get(key).letter == other.boxes.get(key).letter)) {
 				return false;
 			}

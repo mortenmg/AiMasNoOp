@@ -110,7 +110,7 @@ public class Preprocessor {
         System.err.println("Number of boxes: " + boxes.size());
 
         level = new Level(map);
-        level.setBoxes(boxes);
+//        level.setBoxes(boxes);
         level.setGoals(goals);
 
         printCorridorMap();
@@ -118,7 +118,7 @@ public class Preprocessor {
         createGraphFromMap();
         findCost();
         findCorridors();
-//        getGoalTasks();  //Called from supervisor
+        getGoalTasks();  //Called from supervisor
 
         printCorridorMap(cor);
 
@@ -133,7 +133,13 @@ public class Preprocessor {
             allNodes.addAll(ls);
         }
         Iterator goalIterator = goals.entrySet().iterator();
-
+        while(goalIterator.hasNext()){
+            Map.Entry goalPair = (Map.Entry)goalIterator.next();
+            Goal g = (Goal) goalPair.getValue();
+            Node n = graph.get(g.point.x).get(g.point.y);
+            GraphToolkit.dijkstra(allNodes,n);
+            System.err.println("dikjstra: "+ n.getId());
+        }
     }
 
     private void sortAgents() {
@@ -180,9 +186,9 @@ public class Preprocessor {
 //                System.err.println("Trying to match goal(" + g.letter + ") with box(" + b.letter + ")");
                 Point p = b.location;
                 if (Character.toLowerCase(b.letter) == g.letter){
-                    System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.point);
-//                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
-                    int c = (int)Math.sqrt(Math.pow((p.x-g.point.getX()),2)+Math.pow((p.y-g.point.getY()),2));
+                    System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.location);
+                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
+//                    int c = (int)Math.sqrt(Math.pow((p.x-g.point.getX()),2)+Math.pow((p.y-g.point.getY()),2));
                     System.err.println("Price from goal("+ g.letter + ") to box(" +b.id +", "+ b.letter +") is " + c);
                     if (c < cost ){
                         boxBest = b;
@@ -352,7 +358,11 @@ public class Preprocessor {
         for (int x = 0; x < this.map.length; x++) {
             this.graph.add(new ArrayList<>());
             for (int y = 0; y < map[y].length; y++) {
+
                 Node n = new Node(new Point(x, y), this.map[x][y].getType());
+                if (this.map[x][y].getType() == CellType.GOAL){
+                    n.setId(this.map[x][y].getGoalId());
+                }
                 graph.get(x).add(n); //Add to graph
             }
         }

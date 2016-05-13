@@ -83,6 +83,10 @@ public class Cell {
     public boolean isFree() {
         return isFree;
     }
+
+    public Integer getGoalId() {
+        return goalId;
+    }
 }
 
 enum CellType {
