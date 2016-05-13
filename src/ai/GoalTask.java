@@ -42,4 +42,8 @@ public class GoalTask implements Task, Comparable<GoalTask> {
         }
         return 0;
     }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
 }

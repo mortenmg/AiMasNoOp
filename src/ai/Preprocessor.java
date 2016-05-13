@@ -3,7 +3,6 @@ package ai;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
 
@@ -14,22 +13,19 @@ import static java.lang.Character.MAX_VALUE;
  */
 public class Preprocessor {
     private BufferedReader serverMessages;
+
     int mapHeight = 0;
     int mapWidth = 0;
-
-    private char[][] walls;
     private int [][] cor;
 
-    private ArrayList<String> mapLines;
+    private char[][] walls;
 
     private HashMap<Integer, Goal> goals = new HashMap<>();
     private HashMap<Integer, Box> boxes = new HashMap<>();
     private HashMap<Point, Integer> corridors = new HashMap<>();
+
+    private ArrayList<String> mapLines;
     private ArrayList<Agent> agents = new ArrayList<>();
-
-
-    private HashMap<Integer,Boolean> corridorTypes = new HashMap<Integer,Boolean>();
-    //For graph creation
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
 
     private static Cell[][] map;
@@ -116,9 +112,9 @@ public class Preprocessor {
         printCorridorMap();
 
         createGraphFromMap();
-        findCost();
+        findCosts();
         findCorridors();
-//        getGoalTasks();  //Called from supervisor
+        getGoalTasks();  //Called from supervisor
 
         printCorridorMap(cor);
 
@@ -126,7 +122,7 @@ public class Preprocessor {
         return agents;
     }
 
-    private void findCost() {
+    private void findCosts() {
         ArrayList<Node> allNodes = new ArrayList<>();
 
         for (ArrayList<Node> ls:graph) {
@@ -173,7 +169,6 @@ public class Preprocessor {
         while (goalIterator.hasNext()) {
             Map.Entry goalPair = (Map.Entry)goalIterator.next();
             Goal g = (Goal) goalPair.getValue();
-//            System.err.println(goalPair.getKey() + " = " + g.letter);
             Iterator boxIterator = boxes.entrySet().iterator();
             int cost = MAX_VALUE;
             Box boxBest = null;
@@ -198,18 +193,19 @@ public class Preprocessor {
             }
             if (boxBest != null){
                 GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId);
+                goalTask.setWeight(cost);
                 goalTasks.offer(goalTask);
                 goalId++;
             }
-            goalIterator.remove(); // avoids a ConcurrentModificationException
+//            goalIterator.remove(); // avoids a ConcurrentModificationException
         }
 
         System.err.println("goalTasks Printout:");
         for (GoalTask gt: goalTasks) {
             Goal g = goals.get(gt.getGoalId());
-            System.err.println("GoalTasks - Task " + gt.getTaskId() + " Goal: " + gt.getGoalId() + " BoxID: " + gt.getBoxId());
+            Box b = boxes.get(gt.getBoxId());
+            System.err.println("GoalTasks - Task " + gt.getTaskId() + " Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")");
         }
-        //TODO Implement priority
         return goalTasks;
     }
 
@@ -296,7 +292,7 @@ public class Preprocessor {
         }
         if (c > (char) 0) {
             walls[x][y] = c;
-            cor[x][y] = Character.valueOf(c)-47;
+            cor[x][y] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
             return false;
         } else {
             walls[x][y] = (char) id;
