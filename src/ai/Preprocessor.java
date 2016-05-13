@@ -178,7 +178,7 @@ public class Preprocessor {
                 Map.Entry boxPair = (Map.Entry)boxIterator.next();
                 Box b = (Box) boxPair.getValue();
 //                System.err.println("Trying to match goal(" + g.letter + ") with box(" + b.letter + ")");
-                Point p = b.point;
+                Point p = b.location;
                 if (Character.toLowerCase(b.letter) == g.letter){
                     System.err.println("Goal and box is match goal(" + g.letter + ") at "+ g.point +" with box(" + b.letter + ") at " + b.point);
 //                    int c = level.getCostForCoordinateWithGoal(p.x,p.y,g.id);
