@@ -156,4 +156,8 @@ public class Level {
         return Integer.MAX_VALUE;
     }
 
+    public Cell[][] getMap() {
+        return map;
+    }
+
 }

@@ -21,15 +21,8 @@ public class Supervisor extends Thread {
     public static void main( String[] args ) {
         System.err.println( "Supervisor is running!" );
 
-        // The solution is a list of "nodes" or states
-        //LinkedList< ai.Node > solution = null;
-        //Command.every;
         // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
-
-        // Ask the supervisor to start sending the steps to server
-        // while ( s.update() ) ;
-
     }
 
 
@@ -251,10 +244,6 @@ public class Supervisor extends Thread {
         }
 
         this.supervisorMsgQueue = new LinkedList<>();
-    }
-
-    public Cell[][] getMap(){
-       return map;
     }
 
     public Level getLevel() { return level; }

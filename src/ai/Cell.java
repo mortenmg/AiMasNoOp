@@ -7,7 +7,7 @@ public class Cell {
 
     private int corridor = 0;     // Int to define if its part of a corridor
     private CellType type = CellType.EMPTY; // The cell can have a type default is empty;
-    private Integer boxId;
+    private Integer goalId;
     private boolean isFree;
 
     /**
@@ -28,8 +28,8 @@ public class Cell {
      */
     Cell(CellType type) {
         this.type = type;
-        this.boxId = null;
-        if (type == CellType.EMPTY && boxId == null){
+        this.goalId = null;
+        if (type == CellType.EMPTY && goalId == null){
             this.isFree = true;
         }else{
             this.isFree = false;
@@ -39,12 +39,12 @@ public class Cell {
     /**
      * Constructor for setting
      * @param type
-     * @param boxId
+     * @param goalId
      */
-    public Cell(CellType type, int boxId) {
+    public Cell(CellType type, int goalId) {
         this.type = type;
-        this.boxId = boxId;
-        if (type == CellType.EMPTY && boxId == 0){
+        this.goalId = goalId;
+        if (type == CellType.EMPTY && goalId == 0){
             this.isFree = true;
         }else{
             this.isFree = false;
@@ -56,7 +56,7 @@ public class Cell {
      * @author Rasmus
      */
     public boolean hasBox() {
-        if (type == CellType.EMPTY && boxId!=null)
+        if (type == CellType.EMPTY && goalId!=null)
             return true;
         return false;
     }
@@ -75,7 +75,7 @@ public class Cell {
         if (type == CellType.EMPTY && boxId == null){
             this.isFree = true;
         }else{
-            this.boxId = boxId;
+            this.goalId = boxId;
             this.isFree = false;
         }
     }
