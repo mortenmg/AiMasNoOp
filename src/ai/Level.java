@@ -155,7 +155,7 @@ public class Level {
     }
 
     public Box getBoxWithId(Integer i) {
-        return this.boxes.get(i);
+        return this.intBoxes.get(i);
     }
 
     public void setGraph(ArrayList<ArrayList<Node>> graph) {
@@ -164,9 +164,12 @@ public class Level {
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
         System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
-        if(graph.size() > x){
-            if(graph.get(x).size() > y){
-                return graph.get(x).get(y).getGoalPathsCost(goalId);
+
+        System.err.println("x:" + x + "y: " + y + " goalId: " + goalId );
+        if(graph.size() > y){
+            if(graph.get(y).size() > y){
+                Node n = graph.get(y).get(x);
+                return n.getGoalPathsCost(goalId);
             }
         }
         return Integer.MAX_VALUE;
