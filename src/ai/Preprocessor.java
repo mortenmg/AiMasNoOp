@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+
 import static java.lang.Character.MAX_VALUE;
 
 /**
@@ -17,6 +18,7 @@ public class Preprocessor {
     int mapHeight = 0;
     int mapWidth = 0;
     private int [][] cor;
+    private Boolean[] corridorLocks;
 
     private char[][] walls;
 
@@ -212,27 +214,35 @@ public class Preprocessor {
         return goalTasks;
     }
 
+
     //Need a datastructure for corridors
     private void findCorridors() {
         char c;
         int id = 48; //Ascii character '0'
 
-        for (int i = 1; i < walls.length - 1; i++) {
-            for (int j = 1; j < walls[0].length - 1; j++) {
+
+        for (int row = 0; row < walls.length; row++) {
+            for (int col = 0; col < walls[0].length; col++) {
 
                 //If cell is a wall, skip
-                c = walls[i][j];
+                c = walls[row][col];
                 if (c == '+') continue;
 
                     //If cell is empty, analyse
-                else if (isCorridor(i, j)) {
-                    if (assignId(i, j, id)) {
+                else if (isCorridor(row, col)) {
+                    if (assignId(row, col, id)) {
                         id++;
                     }
                 }
 //                isCorridorSum(i,j);
             }
         }
+
+        corridorLocks = new Boolean[id-48];
+        for (int i = 0; i < id-48; i++) {
+            corridorLocks[i] = false;
+        }
+        printCorridorMap();
     }
 
     private boolean isCorridorSum(int x, int y) {
@@ -255,67 +265,73 @@ public class Preprocessor {
         return false;
     }
 
-    private boolean isCorridor(int x, int y) {
+
+    private boolean isCorridor(int row, int col) {
 
         //Vertical corridor
-        if ((walls[x - 1][y] != '+' || walls[x + 1][y] != '+') && walls[x][y - 1] == '+' && walls[x][y + 1] == '+') {
+        if ((walls[row - 1][col] != '+' || walls[row + 1][col] != '+') && walls[row][col - 1] == '+' && walls[row][col + 1] == '+') {
             return true;
         }
         //Horizontal corridor
-        else if (walls[x - 1][y] == '+' && walls[x + 1][y] == '+' && (walls[x][y - 1] != '+' || walls[x][y + 1] != '+')) {
+        else if (walls[row - 1][col] == '+' && walls[row + 1][col] == '+' && (walls[row][col - 1] != '+' || walls[row][col + 1] != '+')) {
             return true;
         }
         //Corners - assume that you can escape from a free cell that is not a dead end
         //Corner LD
-        else if (walls[x][y - 1] == '+' && walls[x + 1][y] == '+' && walls[x - 1][y + 1] == '+')
+        else if (walls[row][col - 1] == '+' && walls[row + 1][col] == '+' && walls[row - 1][col + 1] == '+')
             return true;
             //Corner RD
-        else if (walls[x][y - 1] == '+' && walls[x - 1][y] == '+' && walls[x + 1][y + 1] == '+')
+        else if (walls[row][col - 1] == '+' && walls[row - 1][col] == '+' && walls[row + 1][col + 1] == '+')
             return true;
             //Corner LU
-        else if (walls[x][y + 1] == '+' && walls[x + 1][y] == '+' && walls[x - 1][y - 1] == '+')
+        else if (walls[row][col + 1] == '+' && walls[row + 1][col] == '+' && walls[row - 1][col - 1] == '+')
             return true;
             //Corner RU
-        else if (walls[x][y + 1] == '+' && walls[x - 1][y] == '+' && walls[x + 1][y - 1] == '+')
+        else if (walls[row][col + 1] == '+' && walls[row - 1][col] == '+' && walls[row + 1][col - 1] == '+')
             return true;
 
         return false;
     }
 
-    private boolean assignId(int x, int y, int id) {
+    private boolean assignId(int row, int col, int id) {
         char c = (char) 0;
-        if (walls[x - 1][y] > '+') {
-            c = walls[x - 1][y];
-        } else if (walls[x + 1][y] > '+') {
-            c = walls[x + 1][y];
-        } else if (walls[x][y - 1] > '+') {
-            c = walls[x][y - 1];
-        } else if (walls[x][y + 1] > '+') {
-            c = walls[x][y + 1];
+        if (walls[row - 1][col] > '+') {
+            c = walls[row - 1][col];
+        } else if (walls[row + 1][col] > '+') {
+            c = walls[row + 1][col];
+        } else if (walls[row][col - 1] > '+') {
+            c = walls[row][col - 1];
+        } else if (walls[row][col + 1] > '+') {
+            c = walls[row][col + 1];
         }
         if (c > (char) 0) {
-            walls[x][y] = c;
-            cor[x][y] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
+            walls[row][col] = c;
+            cor[row][col] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
+            corridors.put(new Point(row,col),Character.valueOf(c)-47);
             return false;
         } else {
-            walls[x][y] = (char) id;
-            cor[x][y] = id-47;
+            walls[row][col] = (char) id;
+            cor[row][col] = id-47; // 48 i stedet? for 0-indeksering? :)
             return true;
         }
+    }
+
+    // Their value aee initially set to false
+    public Boolean[] getCorridorLocks(){
+        return corridorLocks;
     }
 
     public void printCorridorMap() {
         System.err.println("ai.Corridor map print out");
         String s = "";
 
-        for (int i = 0; i < walls.length; i++) {
+        for (int row = 0; row < walls.length; row++) {
             s = "";
-            if (walls[i][0] < ' ') //no more lines in map
+            if (walls[row][0] < ' ') //no more lines in map
                 break;
-
-            for (int j = 0; j < walls[0].length; j++) {
-                if (walls[j][i] > ' ')
-                    s = s + walls[j][i];
+            for (int col = 0; col < walls[0].length; col++) {
+                if (walls[row][col] > ' ')
+                    s = s + walls[row][col];
                 else
                     s = s + " ";
             }
