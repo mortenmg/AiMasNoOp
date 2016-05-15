@@ -79,6 +79,8 @@ public class Preprocessor {
 
         // Read lines specifying level layout
         for (String ln : mapLines) {
+            System.err.println(ln);
+
             for (int x = 0; x < ln.length(); x++) {
                 char id = ln.charAt(x);
                 if ('0' <= id && id <= '9') { //If agent
@@ -86,6 +88,7 @@ public class Preprocessor {
                     map[levelLine][x] = new Cell(CellType.AGENT);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][x] = id;
+                    System.err.println("X:" + x + ", Y: " + levelLine + "Is wall");
                     map[levelLine][x] = new Cell(CellType.WALL);
                 } else if ('a' <= id && id <= 'z') { //If goal
                     goals.put(goalId, new Goal(goalId, id, new Point(x, levelLine)));
@@ -115,7 +118,7 @@ public class Preprocessor {
         createGraphFromMap();
         findCosts();
         findCorridors();
-        getGoalTasks();  //Called from supervisor
+        //getGoalTasks();  //Called from supervisor
 
         //printCorridorMap(cor);
 
@@ -193,7 +196,7 @@ public class Preprocessor {
                 //boxIterator.remove(); // avoids a ConcurrentModificationException
             }
             if (boxBest != null){
-                GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId);
+                GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId, boxBest.color);
                 goalTask.setWeight(cost);
                 goalTasks.offer(goalTask);
                 goalId++;
@@ -353,6 +356,7 @@ public class Preprocessor {
         for (int y = 0; y < this.map.length; y++) {
             this.graph.add(new ArrayList<>());
             for (int x = 0; x < map[y].length; x++) {
+                //System.err.println("Node of type: " + this.map[y][x].getType() + " at " + x + "," + y);
                 Node n = new Node(new Point(x, y), this.map[y][x].getType());
                 if (this.map[y][x].getType() == CellType.GOAL){
                     n.setId(this.map[y][x].getGoalId());

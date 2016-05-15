@@ -45,11 +45,12 @@ public class AStarPlanner implements Planner {
             }
 
             if (frontier.isEmpty()) {
-                System.err.println("The A* frontier is empty");
+                System.err.println("The A* frontier is empty. Explored: "+explored.size());
                 return null;
             }
 
             State leafState = frontier.poll();
+            System.err.println("We are now exploring #state "+iterations+ " #Agent pos "+leafState.agentCol+","+leafState.agentRow+ " #Action: "+leafState.action + " #Box "+leafState.getBoxes().get(0).location);
 
             if (isGoalState(leafState, task)) {
                 return leafState.extractPlan();
