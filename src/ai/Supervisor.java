@@ -28,7 +28,7 @@ public class Supervisor extends Thread {
 
 
     /**
-     * Starting the agents.
+     * The main loop of the Supervisor.
      */
     @Override
     public void run() {
@@ -170,7 +170,6 @@ public class Supervisor extends Thread {
         }
     }
 
-    //TODO: Handle case where agent does not have plan yet!
     private ArrayList<Command> getValidActions() {
 
         ArrayList<Command> cmds = new ArrayList<>();
@@ -183,7 +182,7 @@ public class Supervisor extends Thread {
                 cmds.add(a.getAgentId(),a.pollCommand());
             }else{
                 cmds.add(a.getAgentId(),null);
-                //Handle invalid command! - Send message to agent
+                // TODO: Handle invalid command! - Send message to agent
             }
         }
         return cmds;
