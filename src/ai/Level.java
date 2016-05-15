@@ -53,16 +53,21 @@ public class Level {
                     int newAgentColPull = a.getPosition().x + dirToColChange(c.dir1);
 
                     Point boxPoint = new Point(boxCol, boxRow);
+                    //System.err.println(boxPoint);
+                    System.err.println(boxes.keySet());
                     if (boxes.containsKey(boxPoint)) { //Check if there is box to move
+                        System.err.println("Box exists");
                         Box b1 = boxes.get(boxPoint); //Get box
                         if (b1.color == a.getColor()) { //Check if agent can move
+                            System.err.println("Agent can move the box");
                             if (isCellFree(newAgentColPull, newAgentRowPull)) { //Is the new position of agent valid
+                                System.err.println("The new position is okay");
                                 isValid = true;
-                                a.setPosition(new Point(newAgentColPull, newAgentRowPull)); //update agent position
                                 boxes.remove(boxPoint);
                                 Point newBoxLocation = new Point(a.getPosition().x, a.getPosition().y);
                                 b1.setLocation(newBoxLocation);
                                 boxes.put(newBoxLocation, b1); // update box position
+                                a.setPosition(new Point(newAgentColPull, newAgentRowPull)); //update agent position
                             }
                         }
                     }
@@ -155,7 +160,7 @@ public class Level {
     }
 
     public Box getBoxWithId(Integer i) {
-        return this.boxes.get(i);
+        return this.intBoxes.get(i);
     }
 
     public void setGraph(ArrayList<ArrayList<Node>> graph) {
@@ -164,9 +169,12 @@ public class Level {
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
         System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
-        if(graph.size() > x){
-            if(graph.get(x).size() > y){
-                return graph.get(x).get(y).getGoalPathsCost(goalId);
+
+        System.err.println("x:" + x + "y: " + y + " goalId: " + goalId );
+        if(graph.size() > y){
+            if(graph.get(y).size() > y){
+                Node n = graph.get(y).get(x);
+                return n.getGoalPathsCost(goalId);
             }
         }
         return Integer.MAX_VALUE;

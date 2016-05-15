@@ -58,12 +58,16 @@ public class SimpleHeuristic implements Comparator<State>{
             }
         }
         */
+
+        Goal g = Supervisor.getInstance().getLevel().getGoalWithId(task.getGoalId());
+        Box b = n.getBoxes().get(task.getGoalId());
+        //int h = euclidean(b.location.x, b.location.y, g.point.x, g.point.y);
         int h = 0;
         // System.err.println("Heuristics: " + he);
         return h;
     }
 
-    public int euclidean(int x1, int y1, int x2, int y2){
+    public static int euclidean(int x1, int y1, int x2, int y2){
         return (int)Math.sqrt(Math.pow((x1-x2),2)+Math.pow((y1-y2),2));
     }
 

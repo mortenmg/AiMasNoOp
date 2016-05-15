@@ -110,6 +110,7 @@ public class State {
 			}
 		}
 		Collections.shuffle(expandedStates, rnd );
+		System.err.println("   -> Added "+expandedStates.size()+" states");
 		return expandedStates;
 	}
 
@@ -118,7 +119,6 @@ public class State {
 			if (b.location.x == col && b.location.y == row)
 				return false;
 		}
-
 		return  Supervisor.getInstance().getLevel().getMap()[row][col].getType()!=CellType.WALL;
 	}
 
@@ -149,7 +149,12 @@ public class State {
 
 	private State ChildNode() {
 		State copy = new State( this );
-		copy.setBoxes((HashMap<Integer, Box>) boxes.clone());
+		HashMap<Integer,Box> newBoxes = new HashMap<>();
+
+		for (Box b: boxes.values()) {
+			newBoxes.put(b.id, new Box(b));
+		}
+		copy.setBoxes(newBoxes);
 		copy.setTask(this.task);
 		// TODO: do a proper deepclone of the boxes array. - See level, it is kinda implemented there
 		return copy;

@@ -25,7 +25,7 @@ public class Agent extends Thread {
     private boolean terminateFlag = false;
     private Planner planner;
 
-    public Agent( int id, String color, Point position ) {
+    public Agent(int id, String color, Point position) {
         this.id = id;
         this.position = position;
         this.color = color;
@@ -44,10 +44,10 @@ public class Agent extends Thread {
 
     public String act() {
         Random rand = new Random();
-        return Command.every[rand.nextInt( Command.every.length )].toString();
+        return Command.every[rand.nextInt(Command.every.length)].toString();
     }
 
-    private void addPlan(LinkedList<ai.State> plan){
+    private void addPlan(LinkedList<ai.State> plan) {
         synchronized (this.plan) {
             for (ai.State n : plan) {
                 this.plan.add(n.getAction());
@@ -55,14 +55,14 @@ public class Agent extends Thread {
         }
     }
 
-    public Command pollCommand(){
-        synchronized (this.plan){
+    public Command pollCommand() {
+        synchronized (this.plan) {
             return this.plan.poll();
         }
     }
 
-    public Command peekTopCommand(){
-        synchronized (this.plan){
+    public Command peekTopCommand() {
+        synchronized (this.plan) {
             return this.plan.peek();
         }
     }
@@ -70,25 +70,38 @@ public class Agent extends Thread {
 
     @Override
     public void run() {
-        System.err.println("Hi from agent "+id);
+        while (!terminateFlag) {
+            //System.err.println("Hi from agent " + id);
 
-        // ai.Agent will calculate a plan
-        ai.State s = new ai.State(null);
-        LinkedList<ai.State> states = planner.generatePlan(s, new GoalTask(0, 0, 0));
+            // ai.Agent will calculate a plan
+            if (currentTask != null) {
+                System.err.println("gent " + id + "is solving " + currentTask.getTaskId());
+                ai.State s = new ai.State(null);
+                LinkedList<ai.State> states = planner.generatePlan(s, currentTask);
+                // Just printing the plans actions
+                /*
+                for (ai.State state : states) {
+                    System.err.println(state.action);
+                }
+                */
+                addPlan(states);
+                isWorking = false;
+            }
 
-        // Just printing the plans actions
-        for (ai.State state : states) {
-            System.err.println(state.action);
-        }
-        addPlan(states);
-        //addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
 
-        //ai.Agent loop
-        while(!terminateFlag) {
+            //addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
+
+            //ai.Agent loop
+
             handleMessage(getMessage());
         }
         System.err.println(getAgentId() + " terminated");
 
+    }
+
+    public void setCurrentTask(GoalTask currentTask) {
+        System.err.println("Agent: " + this.id + "got task" + currentTask.getTaskId() );
+        this.currentTask = currentTask;
     }
 
 
@@ -98,6 +111,9 @@ public class Agent extends Thread {
      */
     private void handleMessage(Message msg){
         switch (msg.getType()){
+            case Task:
+                isWorking = true;
+                break;
             case Loser:
                 System.err.println(getAgentId() + " did not get : " + msg.getTask().getTaskId());
                 break;

@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
  */
 public class Supervisor extends Thread {
     private List< Agent > agents = new ArrayList<>();
+    private PriorityQueue<GoalTask> goalTasks = new PriorityQueue<>();
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
     public final Queue<Message> supervisorMsgQueue;
-    private Cell[][] map;
+;
     private Level level;
-    private int goalCount; //Mock of list of not fulfilled goals
 
     public static void main( String[] args ) {
         System.err.println( "Supervisor is running!" );
@@ -28,7 +28,7 @@ public class Supervisor extends Thread {
 
 
     /**
-     * Starting the agents.
+     * Supervisor main loop
      */
     @Override
     public void run() {
@@ -37,15 +37,10 @@ public class Supervisor extends Thread {
             agent.start();
         }
 
-        goalCount = 1;
-
-        while(goalCount > 0){
+        while(goalTasks.size() > 0){
             System.err.println("In the while loop");
-            for (Agent agent: agents) {
-                if(!agent.isWorking()){
-                    //Assign task to agent!
-                }
-            }
+
+            assignGoalTask();
 
             ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
 
@@ -61,7 +56,7 @@ public class Supervisor extends Thread {
         while (totalTaskCount > 0) {
             System.err.println("Main loop supervisor");
             //While not all agents have task - Part of initial routine
-            Message task = new Message(new GoalTask(0,0,0), MessageType.TaskForBid);
+            Message task = new Message(new GoalTask(0,0,0, ""), MessageType.TaskForBid);
 
             broadcastMessage(task);
 
@@ -72,6 +67,31 @@ public class Supervisor extends Thread {
             //Final loop - Handle incoming help message and requests for new tasks
         }
             //while (sendActions());
+    }
+
+    private void assignGoalTask() {
+        for(GoalTask gt: goalTasks){
+
+            Agent bestAgent = null;
+            int currentBestBid = Integer.MAX_VALUE;
+            for (Agent a: agents) {
+
+                if(!a.isWorking()){
+                    Box gtBox = level.getBoxWithId(gt.getBoxId());
+                    if(gt.getColor() == a.getColor()){
+                        int agentBid = SimpleHeuristic.euclidean(a.getPosition().x,a.getPosition().y,gtBox.location.x,gtBox.location.y);
+                        if(agentBid < currentBestBid){
+                            currentBestBid = agentBid;
+                            bestAgent = a;
+                        }
+                    }
+                }
+            }
+            if(bestAgent != null){
+                bestAgent.setCurrentTask(gt);
+                bestAgent.postMsg(new Message(MessageType.Task));
+            }
+        }
     }
 
 
@@ -183,7 +203,7 @@ public class Supervisor extends Thread {
                 cmds.add(a.getAgentId(),a.pollCommand());
             }else{
                 cmds.add(a.getAgentId(),null);
-                //Handle invalid command! - Send message to agent
+                // TODO: Handle invalid command! - Send message to agent
             }
         }
         return cmds;
@@ -242,8 +262,7 @@ public class Supervisor extends Thread {
 
             agents = p.getAgents();
 
-            map = new Cell[p.mapWidth][p.mapHeight];
-            map = p.getMap();
+            this.goalTasks = p.getGoalTasks();
 
         } catch (IOException e) {
             e.printStackTrace();

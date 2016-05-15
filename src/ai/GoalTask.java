@@ -12,10 +12,15 @@ public class GoalTask implements Task, Comparable<GoalTask> {
     private int weight;
     private String color;
 
-    GoalTask(int boxId, int goalId, int taskId){
+    GoalTask(int boxId, int goalId, int taskId, String color){
         this.boxId = boxId;
         this.goalId = goalId;
         this.taskId = taskId;
+        this.color = color;
+    }
+
+    public String getColor() {
+        return color;
     }
 
     public int getTaskId() {
