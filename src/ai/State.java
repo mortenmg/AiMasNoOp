@@ -110,7 +110,7 @@ public class State {
 			}
 		}
 		Collections.shuffle(expandedStates, rnd );
-		System.err.println("   -> Added "+expandedStates.size()+" states");
+		//System.err.println("   -> Added "+expandedStates.size()+" states");
 		return expandedStates;
 	}
 

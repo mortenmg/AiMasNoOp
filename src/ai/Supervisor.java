@@ -76,7 +76,7 @@ public class Supervisor extends Thread {
             int currentBestBid = Integer.MAX_VALUE;
             for (Agent a: agents) {
 
-                if(!a.isWorking()){
+                if(a.commandQueueEmpty() && a.getCurrentTask()==null){
                     Box gtBox = level.getBoxWithId(gt.getBoxId());
                     if(gt.getColor() == a.getColor()){
                         int agentBid = SimpleHeuristic.euclidean(a.getPosition().x,a.getPosition().y,gtBox.location.x,gtBox.location.y);
@@ -88,6 +88,7 @@ public class Supervisor extends Thread {
                 }
             }
             if(bestAgent != null){
+                System.err.println("Supervisor assigned a task to agent!");
                 bestAgent.setCurrentTask(gt);
                 bestAgent.postMsg(new Message(MessageType.Task));
             }
@@ -198,12 +199,19 @@ public class Supervisor extends Thread {
         for (Agent a: agents){
             Command c = a.peekTopCommand();
             System.err.println(c);
+            if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) {
+                GoalTask g = a.getCurrentTask();
+                this.goalTasks.remove(g);
+                a.setCurrentTask(null);
+                System.err.println("Agent is done with plan!!!!!!!");
+            }
             if (level.isMoveValidForAgent(c, a)){
                 System.err.println("Move "+c+" is valid");
                 cmds.add(a.getAgentId(),a.pollCommand());
             }else{
                 cmds.add(a.getAgentId(),null);
                 // TODO: Handle invalid command! - Send message to agent
+                a.postMsg(new Message(MessageType.Replan));
             }
         }
         return cmds;
@@ -272,4 +280,8 @@ public class Supervisor extends Thread {
     }
 
     public Level getLevel() { return level; }
+
+    public Agent getAgentWithId(int id) {
+        return agents.get(id);
+    }
 }

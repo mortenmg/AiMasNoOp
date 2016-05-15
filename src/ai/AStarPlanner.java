@@ -15,12 +15,14 @@ public class AStarPlanner implements Planner {
     private PriorityQueue<State> frontier;
     public HashSet<State> explored;
     public State initialState = null;
+    private int agentId;
 
     private Supervisor supervisor;
 
-    public AStarPlanner(){
+    public AStarPlanner(int agentId){
         super();
         supervisor = Supervisor.getInstance();
+        this.agentId = agentId;
     }
 
     // The planner generates a plan
@@ -33,8 +35,8 @@ public class AStarPlanner implements Planner {
         this.initialState = initialState;
         initialState.setBoxes(Supervisor.getInstance().getLevel().getBoxes());
         initialState.setTask(task);
-        initialState.agentCol = 1;
-        initialState.agentRow = 1;
+        initialState.agentCol = Supervisor.getInstance().getAgentWithId(agentId).getPosition().x;
+        initialState.agentRow = Supervisor.getInstance().getAgentWithId(agentId).getPosition().y;
 
         frontier.add( initialState );
 
@@ -50,7 +52,7 @@ public class AStarPlanner implements Planner {
             }
 
             State leafState = frontier.poll();
-            System.err.println("We are now exploring #state "+iterations+ " #Agent pos "+leafState.agentCol+","+leafState.agentRow+ " #Action: "+leafState.action + " #Box "+leafState.getBoxes().get(0).location);
+            //System.err.println("We are now exploring #state "+iterations+ " #Agent pos "+leafState.agentCol+","+leafState.agentRow+ " #Action: "+leafState.action + " #Box "+leafState.getBoxes().get(0).location);
 
             if (isGoalState(leafState, task)) {
                 return leafState.extractPlan();

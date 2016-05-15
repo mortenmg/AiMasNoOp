@@ -16,10 +16,10 @@ public class Agent extends Thread {
     private Supervisor s;
     private Point position;
     private GoalTask currentTask;
-    private boolean isWorking = false;
+    private boolean isWorkingOnPlan;
 
-    public boolean isWorking() {
-        return isWorking;
+    public boolean commandQueueEmpty() {
+        return this.agentMsgQueue.isEmpty();
     }
 
     private boolean terminateFlag = false;
@@ -29,7 +29,7 @@ public class Agent extends Thread {
         this.id = id;
         this.position = position;
         this.color = color;
-        this.planner = new AStarPlanner();
+        this.planner = new AStarPlanner(this.id);
         this.agentMsgQueue = new LinkedList<>();
         this.plan = new LinkedList<>();
     }
@@ -63,6 +63,7 @@ public class Agent extends Thread {
 
     public Command peekTopCommand() {
         synchronized (this.plan) {
+            System.err.println("The size of the agents queue is "+this.plan.size());
             return this.plan.peek();
         }
     }
@@ -74,10 +75,11 @@ public class Agent extends Thread {
             //System.err.println("Hi from agent " + id);
 
             // ai.Agent will calculate a plan
-            if (currentTask != null) {
-                System.err.println("gent " + id + "is solving " + currentTask.getTaskId());
+            if (currentTask != null && agentMsgQueue.isEmpty()) {
+                isWorkingOnPlan = true;
+                System.err.println("Agent " + id + "is solving " + currentTask.getTaskId());
                 ai.State s = new ai.State(null);
-                LinkedList<ai.State> states = planner.generatePlan(s, currentTask);
+                LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
                 // Just printing the plans actions
                 /*
                 for (ai.State state : states) {
@@ -85,7 +87,8 @@ public class Agent extends Thread {
                 }
                 */
                 addPlan(states);
-                isWorking = false;
+                //currentTask = null; //TODO: After solution is sent to server the supervisor should mark this current task..
+                isWorkingOnPlan = false;
             }
 
 
@@ -100,7 +103,12 @@ public class Agent extends Thread {
     }
 
     public void setCurrentTask(GoalTask currentTask) {
-        System.err.println("Agent: " + this.id + "got task" + currentTask.getTaskId() );
+        if(currentTask == null){
+            isWorkingOnPlan = false;
+        }else{
+            isWorkingOnPlan = true;
+        }
+        //System.err.println("Agent: " + this.id + "got task" + currentTask.getTaskId() );
         this.currentTask = currentTask;
     }
 
@@ -112,7 +120,6 @@ public class Agent extends Thread {
     private void handleMessage(Message msg){
         switch (msg.getType()){
             case Task:
-                isWorking = true;
                 break;
             case Loser:
                 System.err.println(getAgentId() + " did not get : " + msg.getTask().getTaskId());
@@ -156,6 +163,9 @@ public class Agent extends Thread {
             case Terminate:
                 this.terminateFlag = true;
                 break;
+            case Replan:
+                this.agentMsgQueue.clear();
+                break;
             default:
                 break;
 
@@ -191,5 +201,9 @@ public class Agent extends Thread {
 
     public String getColor() {
         return color;
+    }
+
+    public boolean isWorkingOnPlan() {
+        return isWorkingOnPlan;
     }
 }
