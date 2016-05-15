@@ -198,10 +198,6 @@ public class Preprocessor {
                 goalTasks.offer(goalTask);
                 goalId++;
             }
-<<<<<<< HEAD
-=======
-//            goalIterator.remove(); // avoids a ConcurrentModificationException
->>>>>>> c88cfdcb81191cf14b10acc10c79f227ea5b191f
         }
 
         System.err.println("goalTasks Printout:");
