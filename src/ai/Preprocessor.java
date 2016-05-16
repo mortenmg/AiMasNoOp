@@ -90,7 +90,7 @@ public class Preprocessor {
                     map[levelLine][x] = new Cell(CellType.EMPTY);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][x] = id;
-                    System.err.println("X:" + x + ", Y: " + levelLine + "Is wall");
+//                    System.err.println("X:" + x + ", Y: " + levelLine + "Is wall");
                     map[levelLine][x] = new Cell(CellType.WALL);
                 } else if ('a' <= id && id <= 'z') { //If goal
                     goals.put(goalId, new Goal(goalId, id, new Point(x, levelLine)));
@@ -168,14 +168,16 @@ public class Preprocessor {
     public PriorityQueue<GoalTask> getGoalTasks() {
         PriorityQueue<GoalTask> goalTasks = new PriorityQueue<GoalTask>();
 
+        HashMap<Integer, Box> boxesCopy = new HashMap<Integer,Box>(boxes);
+
         //Iterate through hashmap of goals
-//        System.err.println("Iterator on Goals hashmap:");
         Iterator goalIterator = goals.entrySet().iterator();
         int goalId = 0;
+
         while (goalIterator.hasNext()) {
             Map.Entry goalPair = (Map.Entry)goalIterator.next();
             Goal g = (Goal) goalPair.getValue();
-            Iterator boxIterator = boxes.entrySet().iterator();
+            Iterator boxIterator = boxesCopy.entrySet().iterator();
             int cost = MAX_VALUE;
             Box boxBest = null;
 
@@ -195,12 +197,13 @@ public class Preprocessor {
                         cost = c;
                     }
                 }
-                //boxIterator.remove(); // avoids a ConcurrentModificationException
+//                boxIterator.remove(); // avoids a ConcurrentModificationException
             }
             if (boxBest != null){
                 GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId, boxBest.color);
                 goalTask.setWeight(cost);
                 goalTasks.offer(goalTask);
+                boxesCopy.remove(boxBest.id);
                 goalId++;
             }
         }

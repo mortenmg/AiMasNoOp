@@ -43,7 +43,7 @@ public class AStarPlanner implements Planner {
         int iterations = 0;
         while (true) {
             if (iterations % 200 == 0) {
-                System.err.println(searchStatus());
+                //System.err.println(searchStatus());
             }
 
             if (frontier.isEmpty()) {

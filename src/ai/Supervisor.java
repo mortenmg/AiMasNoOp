@@ -19,7 +19,12 @@ public class Supervisor extends Thread {
     private Level level;
 
     public static void main( String[] args ) {
-        System.err.println( "Supervisor is running!" );
+        System.err.println();
+        System.err.println("+--------------------+");
+        System.err.println("+       START        +");
+        System.err.println("+--------------------+");
+
+        System.err.println( "[Supervisor] Hello!" );
 
         // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
@@ -37,8 +42,6 @@ public class Supervisor extends Thread {
         }
 
         while(goalTasks.size() > 0){
-            System.err.println("In the while loop");
-
             assignGoalTask();
 
             ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
@@ -46,37 +49,14 @@ public class Supervisor extends Thread {
             sendActions(validCommands);
 
         }
-
-
-    /*
-        //For each initial task, broadcast it.
-        int totalTaskCount = 5; //Mock of tasklist
-
-        while (totalTaskCount > 0) {
-            System.err.println("Main loop supervisor");
-            //While not all agents have task - Part of initial routine
-            Message task = new Message(new GoalTask(0,0,0, ""), MessageType.TaskForBid);
-
-            broadcastMessage(task);
-
-            handleBidsOnTask();
-
-            totalTaskCount--;
-            //end while
-            //Final loop - Handle incoming help message and requests for new tasks
-        }
-            //while (sendActions());
-     */
     }
 
     private void assignGoalTask() {
+        for(GoalTask gt: goalTasks){
 
-        System.err.println("GoalTasks: " + goalTasks.size());
-        for (GoalTask gt : goalTasks) {
-
-                Agent bestAgent = null;
-                int currentBestBid = Integer.MAX_VALUE;
-                for (Agent a : agents) {
+            Agent bestAgent = null;
+            int currentBestBid = Integer.MAX_VALUE;
+            for (Agent a: agents) {
 
                     if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
                         Box gtBox = level.getBoxWithId(gt.getBoxId());
@@ -99,9 +79,9 @@ public class Supervisor extends Thread {
         }
 
 
-        /**
-         *Internal method for getting an agent from its name.
-         **/
+    /**
+     *Internal method for getting an agent from its name.
+     **/
     private Agent getAgentFromName(int agentName){
         List<Agent> allAgents = agents.stream().filter(c -> c.getAgentId() == agentName).collect(Collectors.toList());
         return allAgents.get(0);
@@ -201,7 +181,7 @@ public class Supervisor extends Thread {
 
         for (Agent a: agents){
             Command c = a.peekTopCommand();
-            System.err.println(c);
+            System.err.println("[Supervisor] validating command "+c+" from agent #"+a.getAgentId());
             if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) {
                 GoalTask g = a.getCurrentTask();
                 this.goalTasks.remove(g);
@@ -234,7 +214,7 @@ public class Supervisor extends Thread {
         jointAction +=  "]";
 
         // Place message in buffer
-        System.err.println( jointAction );
+        System.err.println("[Supervisor] sending to server: "+jointAction );
         System.out.println( jointAction );
 
         // Flush buffer
@@ -268,13 +248,13 @@ public class Supervisor extends Thread {
         Preprocessor p = new Preprocessor(serverMessages);
 
         try {
+            System.err.println("+--------------------+");
+            System.err.println("+   PREPROCESSING    +");
+            System.err.println("+--------------------+");
             p.readMap();
             level = p.getLevel();
-
             agents = p.getAgents();
-
-            this.goalTasks = p.getGoalTasks();
-
+            goalTasks = p.getGoalTasks();
         } catch (IOException e) {
             e.printStackTrace();
         }
