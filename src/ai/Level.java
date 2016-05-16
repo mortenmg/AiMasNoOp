@@ -135,6 +135,8 @@ public class Level {
         return goals.get(goalId);
     }
 
+    public HashMap<Integer,Goal> getGoals(){return goals;}
+
     /**
      * copy of boxes. So that level have the actual state of the boxes
      * @return copy of boxes

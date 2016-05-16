@@ -31,7 +31,6 @@ public class Supervisor extends Thread {
     }
 
 
-
     /**
      * Supervisor main loop
      */
@@ -59,24 +58,25 @@ public class Supervisor extends Thread {
             int currentBestBid = Integer.MAX_VALUE;
             for (Agent a: agents) {
 
-                if(a.commandQueueEmpty() && a.getCurrentTask()==null){
-                    Box gtBox = level.getBoxWithId(gt.getBoxId());
-                    if(gt.getColor() == a.getColor()){
-                        int agentBid = SimpleHeuristic.euclidean(a.getPosition().x,a.getPosition().y,gtBox.location.x,gtBox.location.y);
-                        if(agentBid < currentBestBid){
-                            currentBestBid = agentBid;
-                            bestAgent = a;
+                    if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
+                        Box gtBox = level.getBoxWithId(gt.getBoxId());
+                        if (gt.getColor() == a.getColor()) {
+                            //int agentBid = SimpleHeuristic.euclidean(a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y);
+                            int agentBid = SimpleHeuristic.distanceToGoal(level,a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y, gt.getGoalId());
+                            if (agentBid < currentBestBid) {
+                                currentBestBid = agentBid;
+                                bestAgent = a;
+                            }
                         }
                     }
                 }
-            }
-            if(bestAgent != null){
-                System.err.println("[Supervisor] Task #"+gt.getGoalId()+" to agent #"+bestAgent.getAgentId());
-                bestAgent.setCurrentTask(gt);
-                bestAgent.postMsg(new Message(MessageType.Task));
+                if (bestAgent != null) {
+                    System.err.println("Supervisor assigned a task to agent!");
+                    bestAgent.setCurrentTask(gt);
+                    bestAgent.postMsg(new Message(MessageType.Task));
+                }
             }
         }
-    }
 
 
     /**

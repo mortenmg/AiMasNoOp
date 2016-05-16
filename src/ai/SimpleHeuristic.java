@@ -1,5 +1,6 @@
 package ai;
 
+import java.awt.*;
 import java.util.Comparator;
 
 /**
@@ -39,7 +40,6 @@ public class SimpleHeuristic implements Comparator<State>{
      */
     public int h( State n ) {
 
-
         //int pathHeuristic = Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(n.agentCol, n.agentRow, n.getTask().getGoalId());
 
         /*
@@ -59,16 +59,41 @@ public class SimpleHeuristic implements Comparator<State>{
         }
         */
 
+/*  // To slow have to figure better heuristic
+        int h = 0;
+        n.getBoxes().values();
+        // Calculate for all boxes
+        for (Box b: n.getBoxes().values()) {
+            for (Goal g: Supervisor.getInstance().getLevel().getGoals().values()) {
+                h += Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(b.location.x,b.location.y,g.id);
+            }
+        }
+*/
+
+
         Goal g = Supervisor.getInstance().getLevel().getGoalWithId(task.getGoalId());
         Box b = n.getBoxes().get(task.getGoalId());
+        int h = Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(b.location.x,b.location.y,task.getGoalId());
+
         //int h = euclidean(b.location.x, b.location.y, g.point.x, g.point.y);
-        int h = 0;
+        //int h = 0;
         // System.err.println("Heuristics: " + he);
         return h;
     }
 
+
+    public static int distanceToGoal(Level level, int agentX, int agentY,int boxX, int boxY, int goalId){
+        int agentToGoal = level.getCostForCoordinateWithGoal(agentX,agentY,goalId);
+        int boxToGoal = level.getCostForCoordinateWithGoal(boxX,boxY,goalId);
+        int euclid = euclidean(agentX,agentY,boxX,boxY);
+        return agentToGoal + boxToGoal + euclid;
+    }
+
     public static int euclidean(int x1, int y1, int x2, int y2){
         return (int)Math.sqrt(Math.pow((x1-x2),2)+Math.pow((y1-y2),2));
+    }
+    public static int euclidean(Point p1, Point p2){
+        return (int)Math.sqrt(Math.pow((p1.x-p2.x),2)+Math.pow((p1.y-p2.y),2));
     }
 
 }
