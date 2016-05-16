@@ -1,5 +1,6 @@
 package ai;
 
+import java.awt.*;
 import java.util.Comparator;
 
 /**
@@ -90,6 +91,9 @@ public class SimpleHeuristic implements Comparator<State>{
 
     public static int euclidean(int x1, int y1, int x2, int y2){
         return (int)Math.sqrt(Math.pow((x1-x2),2)+Math.pow((y1-y2),2));
+    }
+    public static int euclidean(Point p1, Point p2){
+        return (int)Math.sqrt(Math.pow((p1.x-p2.x),2)+Math.pow((p1.y-p2.y),2));
     }
 
 }
