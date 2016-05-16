@@ -26,7 +26,6 @@ public class Supervisor extends Thread {
     }
 
 
-
     /**
      * Supervisor main loop
      */
@@ -49,7 +48,7 @@ public class Supervisor extends Thread {
         }
 
 
-
+    /*
         //For each initial task, broadcast it.
         int totalTaskCount = 5; //Mock of tasklist
 
@@ -67,38 +66,42 @@ public class Supervisor extends Thread {
             //Final loop - Handle incoming help message and requests for new tasks
         }
             //while (sendActions());
+     */
     }
 
     private void assignGoalTask() {
-        for(GoalTask gt: goalTasks){
 
-            Agent bestAgent = null;
-            int currentBestBid = Integer.MAX_VALUE;
-            for (Agent a: agents) {
+        System.err.println("GoalTasks: " + goalTasks.size());
+        for (GoalTask gt : goalTasks) {
 
-                if(a.commandQueueEmpty() && a.getCurrentTask()==null){
-                    Box gtBox = level.getBoxWithId(gt.getBoxId());
-                    if(gt.getColor() == a.getColor()){
-                        int agentBid = SimpleHeuristic.euclidean(a.getPosition().x,a.getPosition().y,gtBox.location.x,gtBox.location.y);
-                        if(agentBid < currentBestBid){
-                            currentBestBid = agentBid;
-                            bestAgent = a;
+                Agent bestAgent = null;
+                int currentBestBid = Integer.MAX_VALUE;
+                for (Agent a : agents) {
+
+                    if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
+                        Box gtBox = level.getBoxWithId(gt.getBoxId());
+                        if (gt.getColor() == a.getColor()) {
+                            //int agentBid = SimpleHeuristic.euclidean(a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y);
+                            int agentBid = SimpleHeuristic.distanceToGoal(level,a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y, gt.getGoalId());
+                            if (agentBid < currentBestBid) {
+                                currentBestBid = agentBid;
+                                bestAgent = a;
+                            }
                         }
                     }
                 }
-            }
-            if(bestAgent != null){
-                System.err.println("Supervisor assigned a task to agent!");
-                bestAgent.setCurrentTask(gt);
-                bestAgent.postMsg(new Message(MessageType.Task));
+                if (bestAgent != null) {
+                    System.err.println("Supervisor assigned a task to agent!");
+                    bestAgent.setCurrentTask(gt);
+                    bestAgent.postMsg(new Message(MessageType.Task));
+                }
             }
         }
-    }
 
 
-    /**
-     *Internal method for getting an agent from its name.
-     **/
+        /**
+         *Internal method for getting an agent from its name.
+         **/
     private Agent getAgentFromName(int agentName){
         List<Agent> allAgents = agents.stream().filter(c -> c.getAgentId() == agentName).collect(Collectors.toList());
         return allAgents.get(0);
