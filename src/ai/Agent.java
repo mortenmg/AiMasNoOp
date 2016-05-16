@@ -63,7 +63,6 @@ public class Agent extends Thread {
 
     public Command peekTopCommand() {
         synchronized (this.plan) {
-            System.err.println("The size of the agents queue is "+this.plan.size());
             return this.plan.peek();
         }
     }
@@ -71,13 +70,13 @@ public class Agent extends Thread {
 
     @Override
     public void run() {
+        System.err.println(this+" Hello!");
         while (!terminateFlag) {
-            //System.err.println("Hi from agent " + id);
 
             // ai.Agent will calculate a plan
             if (currentTask != null && agentMsgQueue.isEmpty()) {
                 isWorkingOnPlan = true;
-                System.err.println("Agent " + id + "is solving " + currentTask.getTaskId());
+                System.err.println(this + " I am planning task #"+ currentTask.getTaskId());
                 ai.State s = new ai.State(null);
                 LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
                 // Just printing the plans actions
@@ -89,6 +88,7 @@ public class Agent extends Thread {
                 addPlan(states);
                 //currentTask = null; //TODO: After solution is sent to server the supervisor should mark this current task..
                 isWorkingOnPlan = false;
+                System.err.println(this + " Done planning task #"+ currentTask.getTaskId());
             }
 
 
@@ -205,5 +205,16 @@ public class Agent extends Thread {
 
     public boolean isWorkingOnPlan() {
         return isWorkingOnPlan;
+    }
+
+
+    /**
+     * Method for getting a string representation
+     * of an agent.
+     * @return
+     */
+    @Override
+    public String toString() {
+        return "[Agent "+id+"]";
     }
 }

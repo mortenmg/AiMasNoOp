@@ -82,7 +82,7 @@ public class Level {
                     Point boxPointPush = new Point(boxColPush, boxRowPush);
 
                     if (boxes.containsKey(boxPointPush)) { //Check if there is box to move
-                        System.err.println("box to move!");
+                        //System.err.println("box to move!");
                         Box b2 = boxes.get(boxPointPush); //Get box
 
                         int newBoxRow = b2.location.y + dirToRowChange(c.dir2);
