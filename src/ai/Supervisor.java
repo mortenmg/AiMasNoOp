@@ -180,8 +180,8 @@ public class Supervisor extends Thread {
         ArrayList<Command> cmds = new ArrayList<>();
 
         for (Agent a: agents){
+            String valid = "invalid";
             Command c = a.peekTopCommand();
-            System.err.println("[Supervisor] validating command "+c+" from agent #"+a.getAgentId());
             if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) {
                 GoalTask g = a.getCurrentTask();
                 this.goalTasks.remove(g);
@@ -189,13 +189,14 @@ public class Supervisor extends Thread {
                 System.err.println("Agent is done with plan!!!!!!!");
             }
             if (level.isMoveValidForAgent(c, a)){
-                System.err.println("Move "+c+" is valid");
                 cmds.add(a.getAgentId(),a.pollCommand());
+                valid = "valid";
             }else{
                 cmds.add(a.getAgentId(),null);
                 // TODO: Handle invalid command! - Send message to agent
                 a.postMsg(new Message(MessageType.Replan));
             }
+            System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
         }
         return cmds;
     }
@@ -214,7 +215,7 @@ public class Supervisor extends Thread {
         jointAction +=  "]";
 
         // Place message in buffer
-        System.err.println("[Supervisor] sending to server: "+jointAction );
+        System.err.println("[Supervisor] Sending to server: "+jointAction );
         System.out.println( jointAction );
 
         // Flush buffer

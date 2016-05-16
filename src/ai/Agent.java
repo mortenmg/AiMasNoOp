@@ -88,7 +88,7 @@ public class Agent extends Thread {
                 addPlan(states);
                 //currentTask = null; //TODO: After solution is sent to server the supervisor should mark this current task..
                 isWorkingOnPlan = false;
-                System.err.println(this + " Done planning task #"+ currentTask.getTaskId());
+                System.err.println(this + " Done planning task #"+ currentTask.getTaskId()+". The plan size is "+states.size());
             }
 
 

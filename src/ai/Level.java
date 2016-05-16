@@ -37,8 +37,6 @@ public class Level {
                     int newAgentRow = a.getPosition().y + dirToRowChange(c.dir1);
                     int newAgentCol = a.getPosition().x + dirToColChange(c.dir1);
 
-                    System.err.println("Agent Row: "+a.getPosition().y + " Agent Col: "+ a.getPosition().x);
-                    System.err.println("New Row: "+newAgentRow + " New Col: "+ newAgentCol);
                     if (isCellFree(newAgentCol, newAgentRow)) {
                         isValid = true;
                         a.setPosition(new Point(newAgentCol, newAgentRow)); //Update posistion
@@ -53,15 +51,10 @@ public class Level {
                     int newAgentColPull = a.getPosition().x + dirToColChange(c.dir1);
 
                     Point boxPoint = new Point(boxCol, boxRow);
-                    //System.err.println(boxPoint);
-                    System.err.println(boxes.keySet());
                     if (boxes.containsKey(boxPoint)) { //Check if there is box to move
-                        System.err.println("Box exists");
                         Box b1 = boxes.get(boxPoint); //Get box
                         if (b1.color == a.getColor()) { //Check if agent can move
-                            System.err.println("Agent can move the box");
                             if (isCellFree(newAgentColPull, newAgentRowPull)) { //Is the new position of agent valid
-                                System.err.println("The new position is okay");
                                 isValid = true;
                                 boxes.remove(boxPoint);
                                 Point newBoxLocation = new Point(a.getPosition().x, a.getPosition().y);
@@ -82,14 +75,12 @@ public class Level {
                     Point boxPointPush = new Point(boxColPush, boxRowPush);
 
                     if (boxes.containsKey(boxPointPush)) { //Check if there is box to move
-                        //System.err.println("box to move!");
                         Box b2 = boxes.get(boxPointPush); //Get box
 
                         int newBoxRow = b2.location.y + dirToRowChange(c.dir2);
                         int newBoxCol = b2.location.x + dirToColChange(c.dir2);
 
                         if (b2.color == a.getColor()) { //Check if agent can move
-                            System.err.println("color is the same");
                             if (isCellFree(newBoxCol, newBoxRow)) {
                                 isValid = true;
                                 a.setPosition(boxPointPush); //Update agent position to where box were
