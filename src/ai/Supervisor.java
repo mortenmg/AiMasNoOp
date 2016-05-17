@@ -1,5 +1,6 @@
 package ai;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -71,7 +72,7 @@ public class Supervisor extends Thread {
                     }
                 }
                 if (bestAgent != null) {
-                    System.err.println("Supervisor assigned a task to agent!");
+                    System.err.println("[Supervisor] Assigned task #"+gt.getGoalId()+" to agent "+bestAgent.getAgentId());
                     bestAgent.setCurrentTask(gt);
                     bestAgent.postMsg(new Message(MessageType.Task));
                 }
@@ -85,6 +86,14 @@ public class Supervisor extends Thread {
     private Agent getAgentFromName(int agentName){
         List<Agent> allAgents = agents.stream().filter(c -> c.getAgentId() == agentName).collect(Collectors.toList());
         return allAgents.get(0);
+    }
+
+    private Agent getAgentFromPoint(Point p){
+        for(Agent a: agents){
+            if (a.getPosition().equals(p))
+                return a;
+        }
+        return null;
     }
 
     private int getCountOfBidsInQueue(){
@@ -174,10 +183,17 @@ public class Supervisor extends Thread {
         }
     }
 
-    //TODO: Handle case where agent does not have plan yet!
+    /**
+     * This method is receiving the actions from the agents
+     * action queues. The action is added to the joint
+     * actions sent to the server if it is valid.
+     *
+     * @return
+     */
     private ArrayList<Command> getValidActions() {
 
         ArrayList<Command> cmds = new ArrayList<>();
+        Point p;
 
         for (Agent a: agents){
             String valid = "invalid";
@@ -186,15 +202,32 @@ public class Supervisor extends Thread {
                 GoalTask g = a.getCurrentTask();
                 this.goalTasks.remove(g);
                 a.setCurrentTask(null);
-                System.err.println("Agent is done with plan!!!!!!!");
-            }
-            if (level.isMoveValidForAgent(c, a)){
+                cmds.add(a.getAgentId(),null);
+                System.err.println("[Supervisor] I have received all actions from agent "+a.getAgentId());
+            } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
+                System.err.println("[Supervisor] adding a command ");
                 cmds.add(a.getAgentId(),a.pollCommand());
                 valid = "valid";
-            }else{
-                cmds.add(a.getAgentId(),null);
-                // TODO: Handle invalid command! - Send message to agent
-                a.postMsg(new Message(MessageType.Replan));
+            } else { // The move is invalid
+                if (!p.equals(new Point(-1,-1))) {
+                    Box b;
+                    Agent otherAgent;
+                    if ((b = level.getBoxAtPosition(p)) != null){ // There is a box in the way.
+                        a.postMsg(new Message(MessageType.Replan));
+                        cmds.add(a.getAgentId(),null);
+                    } else if ((otherAgent = this.getAgentFromPoint(p)) != null){ // There is an agent in the way
+                        if (otherAgent.commandQueueEmpty() && !a.isWorkingOnPlan()) { // The other agent is not doing anything
+                            otherAgent.postMsg(new Message(MessageType.MoveToASafePlace));
+                            cmds.add(a.getAgentId(), null);
+                            System.err.println("[RASMUS] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
+                        }
+                        cmds.add(a.getAgentId(),null);
+                    }
+                } else { // There is no move
+                    cmds.add(a.getAgentId(),null);
+                }
+                // Why is the command invalid??
+
             }
             System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
         }
@@ -267,5 +300,9 @@ public class Supervisor extends Thread {
 
     public Agent getAgentWithId(int id) {
         return agents.get(id);
+    }
+
+    public List<Agent> getAgents() {
+        return agents;
     }
 }

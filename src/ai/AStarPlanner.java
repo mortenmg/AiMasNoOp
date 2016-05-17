@@ -17,11 +17,8 @@ public class AStarPlanner implements Planner {
     public State initialState = null;
     private int agentId;
 
-    private Supervisor supervisor;
-
     public AStarPlanner(int agentId){
         super();
-        supervisor = Supervisor.getInstance();
         this.agentId = agentId;
     }
 
@@ -85,7 +82,7 @@ public class AStarPlanner implements Planner {
      * @param task
      * @return Boolean
      */
-    public boolean isGoalState(State state, Task task) {
+    private boolean isGoalState(State state, Task task) {
         //System.err.println("Is this state a goal state? Box: "+state.getBoxes().get(0).location+" Agent: "+state.agentRow+", "+state.agentCol);
         Box box = state.getBoxes().get(task.getBoxId());
         Goal g = Supervisor.getInstance().getLevel().getGoalWithId(task.getGoalId());

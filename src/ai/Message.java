@@ -13,7 +13,8 @@ enum MessageType{
     Task,
     TaskForBid,
     Terminate,
-    Replan
+    Replan,
+    MoveToASafePlace
 }
 
 public class Message implements Comparable<Message> {

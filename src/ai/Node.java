@@ -61,8 +61,8 @@ public class Node {
     }
 
     public int getGoalPathsCost(int goalId){
-        System.err.println(this.getType() +  " node type");
-        System.err.println("nodes number of goal paths:" + this.goalPathCosts.size());
+        //System.err.println(this.getType() +  " node type");
+        //System.err.println("nodes number of goal paths:" + this.goalPathCosts.size());
 
         return goalPathCosts.get(goalId);
     }

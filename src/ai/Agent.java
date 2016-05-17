@@ -42,9 +42,9 @@ public class Agent extends Thread {
         this.position = position;
     }
 
-    public String act() {
-        Random rand = new Random();
-        return Command.every[rand.nextInt(Command.every.length)].toString();
+
+    private void moveToSafePlace(){
+
     }
 
     private void addPlan(LinkedList<ai.State> plan) {
@@ -71,20 +71,22 @@ public class Agent extends Thread {
     @Override
     public void run() {
         System.err.println(this+" Hello!");
-        while (!terminateFlag) {
 
+        while (!terminateFlag) {
             // ai.Agent will calculate a plan
             if (currentTask != null && agentMsgQueue.isEmpty()) {
                 isWorkingOnPlan = true;
                 System.err.println(this + " I am planning task #"+ currentTask.getTaskId());
                 ai.State s = new ai.State(null);
                 LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
+
                 // Just printing the plans actions
-                /*
+                System.err.print(this + " My plan: ");
                 for (ai.State state : states) {
-                    System.err.println(state.action);
+                    System.err.print(state.action+" ");
                 }
-                */
+                System.err.println();
+
                 addPlan(states);
                 //currentTask = null; //TODO: After solution is sent to server the supervisor should mark this current task..
                 isWorkingOnPlan = false;
@@ -164,7 +166,12 @@ public class Agent extends Thread {
                 this.terminateFlag = true;
                 break;
             case Replan:
-                this.agentMsgQueue.clear();
+                System.err.println(this + " I was asked to empty my action queue.");
+                this.plan.clear();
+                break;
+            case MoveToASafePlace:
+                System.err.println(this + " I was asked to move to a safe place.");
+                moveToSafePlace();
                 break;
             default:
                 break;

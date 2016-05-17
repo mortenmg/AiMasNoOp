@@ -20,16 +20,27 @@ public class Level {
     private HashMap<Point,Box> boxes = new HashMap<>();
     private HashMap<Integer,Box> intBoxes = new HashMap<>();
 
-    private ArrayList<Agent> agents = new ArrayList<>();
-
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
 
     Level(Cell[][] map) {
         this.map = map;
     }
 
-    public boolean isMoveValidForAgent(Command c, Agent a) {
-        boolean isValid = false;
+    /**
+     * This method determines if a move is valid.
+     * If there is something in the way for a
+     * move, then we will return the cell
+     * that is blocking.
+     *
+     * Old name: isMoveValidForAgent
+     * New name: conflictingCellFromMove
+     *
+     * @param c The command that is being applied.
+     * @param a The agent that is performing an action
+     * @return
+     */
+    public Point conflictingCellFromMove(Command c, Agent a) {
+        Point conflictingCell = new Point(-1, -1);
 
         if(c != null) {
             switch (c.actType) {
@@ -38,8 +49,10 @@ public class Level {
                     int newAgentCol = a.getPosition().x + dirToColChange(c.dir1);
 
                     if (isCellFree(newAgentCol, newAgentRow)) {
-                        isValid = true;
+                        conflictingCell = null;
                         a.setPosition(new Point(newAgentCol, newAgentRow)); //Update posistion
+                    } else {
+                        conflictingCell = new Point(newAgentCol, newAgentRow);
                     }
                     break;
 
@@ -55,12 +68,14 @@ public class Level {
                         Box b1 = boxes.get(boxPoint); //Get box
                         if (b1.color == a.getColor()) { //Check if agent can move
                             if (isCellFree(newAgentColPull, newAgentRowPull)) { //Is the new position of agent valid
-                                isValid = true;
+                                conflictingCell = null;
                                 boxes.remove(boxPoint);
                                 Point newBoxLocation = new Point(a.getPosition().x, a.getPosition().y);
                                 b1.setLocation(newBoxLocation);
                                 boxes.put(newBoxLocation, b1); // update box position
                                 a.setPosition(new Point(newAgentColPull, newAgentRowPull)); //update agent position
+                            } else { // The new position is occupied
+                                conflictingCell = new Point(newAgentColPull, newAgentRowPull);
                             }
                         }
                     }
@@ -70,8 +85,6 @@ public class Level {
                     int boxRowPush = a.getPosition().y + dirToRowChange(c.dir1);
                     int boxColPush = a.getPosition().x + dirToColChange(c.dir1);
 
-
-
                     Point boxPointPush = new Point(boxColPush, boxRowPush);
 
                     if (boxes.containsKey(boxPointPush)) { //Check if there is box to move
@@ -80,26 +93,32 @@ public class Level {
                         int newBoxRow = b2.location.y + dirToRowChange(c.dir2);
                         int newBoxCol = b2.location.x + dirToColChange(c.dir2);
 
-                        if (b2.color == a.getColor()) { //Check if agent can move
+                        if (b2.color == a.getColor()) { //Check if agent can move the box
+                            if (new Point(4,2).equals(new Point(newBoxCol,newBoxRow)))
+                                System.err.println("Checking the interesting place!");
                             if (isCellFree(newBoxCol, newBoxRow)) {
-                                isValid = true;
+                                if (new Point(4,2).equals(new Point(newBoxCol,newBoxRow)))
+                                    System.err.println("IT WAS FREEE :O :O :O ");
+                                conflictingCell = null;
                                 a.setPosition(boxPointPush); //Update agent position to where box were
                                 boxes.remove(boxPointPush);
                                 Point newBoxPos = new Point(newBoxCol, newBoxRow);
                                 b2.setLocation(newBoxPos);
                                 boxes.put(newBoxPos, b2);
+                            } else { // The new position is occupied
+                                conflictingCell = new Point(newBoxCol, newBoxRow);
                             }
                         }
                     }
                     break;
             }
         }
-        return isValid;
+        return conflictingCell;
     }
 
 
-    public boolean boxAtPosition(Point p){
-        return boxes.containsKey(p);
+    public Box getBoxAtPosition(Point p){
+        return boxes.get(p);
     }
 
     private int dirToRowChange( Command.dir d ) {
@@ -118,7 +137,7 @@ public class Level {
      */
     public boolean isCellFree(int x, int y){
         Point p = new Point(x,y);
-        for(Agent a: agents){
+        for(Agent a: Supervisor.getInstance().getAgents()){
             if(a.getPosition().equals(p))
                 return false;
         }
@@ -161,9 +180,9 @@ public class Level {
     }
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
-        System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
+        //System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
 
-        System.err.println("x:" + x + "y: " + y + " goalId: " + goalId );
+        //System.err.println("x:" + x + "y: " + y + " goalId: " + goalId );
         if(graph.size() > y){
             if(graph.get(y).size() > y){
                 Node n = graph.get(y).get(x);
