@@ -12,6 +12,6 @@ public class MovePlanner implements Planner{
     }
 
     public LinkedList<State> generatePlan(State initialState, MoveTask task) {
-
+        return null;
     }
 }
