@@ -8,19 +8,16 @@ import java.util.HashMap;
  * Created by Mathias on 09-05-2016.
  */
 
-
 public class Level {
 
-    //This is the static map, contains only static map information.
-    private final Cell[][] map;
-
-    private HashMap<Integer,Goal> goals = new HashMap<>();
-
-    //This data structure is updated when a box is moved. e.i. a push or pull action is send to the server.
-    private HashMap<Point,Box> boxes = new HashMap<>();
-    private HashMap<Integer,Box> intBoxes = new HashMap<>();
-
+    private final Cell[][] map;                                 //This is the static map, contains only static map information.
+    private HashMap<Integer,Goal> goals = new HashMap<>();      //Gets updated when a valid move is sent to server
+    private HashMap<Point,Box> boxes = new HashMap<>();         //Gets updated when a valid move is sent to server
+    private HashMap<Integer,Box> intBoxes = new HashMap<>();    //Copy of the boxes hashmap, but has the boxId's as index
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
+
+    private HashMap<Point,Box> futureBoxes = new HashMap<>();
+    private HashMap<Point, Agent> futureAgents = new HashMap<>(); // This has to be the shallow agents
 
     Level(Cell[][] map) {
         this.map = map;
@@ -50,7 +47,9 @@ public class Level {
 
                     if (isCellFree(newAgentCol, newAgentRow)) {
                         conflictingCell = null;
-                        a.setPosition(new Point(newAgentCol, newAgentRow)); //Update posistion
+
+                        updateFutureAgent(a, new Point(newAgentCol, newAgentRow));
+
                     } else {
                         conflictingCell = new Point(newAgentCol, newAgentRow);
                     }
@@ -64,16 +63,17 @@ public class Level {
                     int newAgentColPull = a.getPosition().x + dirToColChange(c.dir1);
 
                     Point boxPoint = new Point(boxCol, boxRow);
-                    if (boxes.containsKey(boxPoint)) { //Check if there is box to move
+                    if (boxes.containsKey(boxPoint) && futureBoxes.containsKey(boxPoint)) { // Check if there is box to move
                         Box b1 = boxes.get(boxPoint); //Get box
                         if (b1.color == a.getColor()) { //Check if agent can move
                             if (isCellFree(newAgentColPull, newAgentRowPull)) { //Is the new position of agent valid
                                 conflictingCell = null;
-                                boxes.remove(boxPoint);
+
                                 Point newBoxLocation = new Point(a.getPosition().x, a.getPosition().y);
-                                b1.setLocation(newBoxLocation);
-                                boxes.put(newBoxLocation, b1); // update box position
-                                a.setPosition(new Point(newAgentColPull, newAgentRowPull)); //update agent position
+                                updateFutureBox(b1, newBoxLocation);
+
+                                Point newPos = new Point(newAgentColPull, newAgentRowPull);
+                                updateFutureAgent(a, newPos);
                             } else { // The new position is occupied
                                 conflictingCell = new Point(newAgentColPull, newAgentRowPull);
                             }
@@ -87,24 +87,20 @@ public class Level {
 
                     Point boxPointPush = new Point(boxColPush, boxRowPush);
 
-                    if (boxes.containsKey(boxPointPush)) { //Check if there is box to move
+                    if (boxes.containsKey(boxPointPush) && futureBoxes.containsKey(boxPointPush)) { //Check if there is box to move
                         Box b2 = boxes.get(boxPointPush); //Get box
 
                         int newBoxRow = b2.location.y + dirToRowChange(c.dir2);
                         int newBoxCol = b2.location.x + dirToColChange(c.dir2);
 
                         if (b2.color == a.getColor()) { //Check if agent can move the box
-                            if (new Point(4,2).equals(new Point(newBoxCol,newBoxRow)))
-                                System.err.println("Checking the interesting place!");
                             if (isCellFree(newBoxCol, newBoxRow)) {
-                                if (new Point(4,2).equals(new Point(newBoxCol,newBoxRow)))
-                                    System.err.println("IT WAS FREEE :O :O :O ");
                                 conflictingCell = null;
-                                a.setPosition(boxPointPush); //Update agent position to where box were
-                                boxes.remove(boxPointPush);
+
+                                updateFutureAgent(a, boxPointPush); //Update agent position to where box were
+
                                 Point newBoxPos = new Point(newBoxCol, newBoxRow);
-                                b2.setLocation(newBoxPos);
-                                boxes.put(newBoxPos, b2);
+                                updateFutureBox(b2, newBoxPos);
                             } else { // The new position is occupied
                                 conflictingCell = new Point(newBoxCol, newBoxRow);
                             }
@@ -116,11 +112,6 @@ public class Level {
         return conflictingCell;
     }
 
-
-    public Box getBoxAtPosition(Point p){
-        return boxes.get(p);
-    }
-
     private int dirToRowChange( Command.dir d ) {
         return ( d == Command.dir.S ? 1 : ( d == Command.dir.N ? -1 : 0 ) ); // South is down one row (1), north is up one row (-1)
     }
@@ -129,23 +120,75 @@ public class Level {
         return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
     }
 
+    private void updateFutureAgent(Agent agent, Point newPos) {
+        Agent futureAgent = futureAgents.remove(agent.getPosition());
+        futureAgent.setPosition(newPos);
+        futureAgents.put(newPos, futureAgent);
+    }
+
+    private void updateFutureBox(Box box, Point newPos) {
+        Box futureBox = futureBoxes.remove(box.location);
+        futureBox.setLocation(newPos);
+        futureBoxes.put(newPos, futureBox);
+    }
+
     /**
-     * Checks for wall, agent and box at x,y
-     * @param x
-     * @param y
+     * Updates the level so that the boxes and agents of the level
+     * are set to the future boxes and future agents.
+     */
+    public void updateToFuture() {
+        this.boxes = this.futureBoxes;
+        this.futureBoxes.clear();
+
+        // TODO: update the point boxes as well.
+    }
+
+    /**
+     * This method will prepare the level for agents testing their actions.
+     * This means it will create a list of future boxes, based on the
+     * current boxes, and then when an agents move is valid, it will
+     * update the list of future boxes.
+     */
+    public void prepareNextLevel(){
+        this.futureBoxes.clear();
+        this.futureBoxes = getBoxesWithPointKeys();
+    }
+
+    /**
+     * Checks for walls, current agents, future agents, current boxes
+     * and future boxes at the position p.
+     *
+     * @param p
      * @return
      */
-    public boolean isCellFree(int x, int y){
-        Point p = new Point(x,y);
+    private boolean isCellFree(Point p){
+        // Check the agents current position
         for(Agent a: Supervisor.getInstance().getAgents()){
             if(a.getPosition().equals(p))
                 return false;
         }
-        if(map[y][x].isFree() && !boxes.containsKey(p)){
+
+        // Checks the agents future position
+        for (Agent a : this.futureAgents.values()){
+            if (a.getPosition().equals(p))
+                return false;
+        }
+
+        if(map[p.y][p.x].isFree() && !boxes.containsKey(p) && !futureBoxes.containsKey(p)){
             return true;
         }else{
             return false;
         }
+    }
+
+    /**
+     * Just a overloading method.
+     * @param x
+     * @param y
+     * @return
+     */
+    private boolean isCellFree(int x, int y) {
+        return isCellFree(new Point(x,y));
     }
 
     public void setGoals(HashMap<Integer,Goal> goals) { this.goals = goals; }
@@ -162,11 +205,16 @@ public class Level {
      */
     public HashMap<Integer, Box> getBoxes() {
         HashMap<Integer,Box> tmpBoxes = new HashMap<>();
-
-        //for(int boxId : intBoxes)
-
         for(Box b: intBoxes.values()){
             tmpBoxes.put(b.id, new Box(b));
+        }
+        return tmpBoxes;
+    }
+
+    public HashMap<Point, Box> getBoxesWithPointKeys() {
+        HashMap<Point,Box> tmpBoxes = new HashMap<>();
+        for(Box b: intBoxes.values()){
+            tmpBoxes.put(b.location, new Box(b));
         }
         return tmpBoxes;
     }
@@ -180,9 +228,6 @@ public class Level {
     }
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
-        //System.err.println("Graph size = " + graph.size() + ", " + graph.get(0).size());
-
-        //System.err.println("x:" + x + "y: " + y + " goalId: " + goalId );
         if(graph.size() > y){
             if(graph.get(y).size() > y){
                 Node n = graph.get(y).get(x);
@@ -197,10 +242,13 @@ public class Level {
     }
 
     public void setIntBoxes(HashMap<Integer, Box> intBoxes) {
-
         this.intBoxes = intBoxes;
         for(Box b: this.intBoxes.values()){
             this.boxes.put(new Point(b.location),b);
         }
+    }
+
+    public Box getBoxAtPosition(Point p){
+        return boxes.get(p);
     }
 }

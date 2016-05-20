@@ -45,9 +45,12 @@ public class Supervisor extends Thread {
         while(goalTasks.size() > 0){
             assignGoalTask();
 
+            this.level.prepareNextLevel();
             ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
 
-            sendActions(validCommands);
+            if( sendActions(validCommands) ) {
+                level.updateToFuture();
+            }
 
         }
     }
@@ -198,12 +201,16 @@ public class Supervisor extends Thread {
         for (Agent a: agents){
             String valid = "invalid";
             Command c = a.peekTopCommand();
-            if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) {
+            if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
                 GoalTask g = a.getCurrentTask();
                 this.goalTasks.remove(g);
                 a.setCurrentTask(null);
                 cmds.add(a.getAgentId(),null);
                 System.err.println("[Supervisor] I have received all actions from agent "+a.getAgentId());
+            } else if (c!=null && c.actType == Command.type.NoOp) {
+                System.err.println("[What] received a noop command");
+                a.pollCommand();
+                cmds.add(a.getAgentId(), null);
             } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
                 System.err.println("[Supervisor] adding a command ");
                 cmds.add(a.getAgentId(),a.pollCommand());
@@ -219,9 +226,15 @@ public class Supervisor extends Thread {
                         if (otherAgent.commandQueueEmpty() && !a.isWorkingOnPlan()) { // The other agent is not doing anything
                             otherAgent.postMsg(new Message(MessageType.MoveToASafePlace));
                             cmds.add(a.getAgentId(), null);
-                            System.err.println("[RASMUS] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
+
+                            // TODO: THIS IS A QUICKFIX!
+                            Command noOp = new Command();
+                            a.forceAddCommand(noOp);
+
+                            System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
+                        } else {
+                            cmds.add(a.getAgentId(), null);
                         }
-                        cmds.add(a.getAgentId(),null);
                     }
                 } else { // There is no move
                     cmds.add(a.getAgentId(),null);

@@ -11,4 +11,8 @@ public class MoveTask {
     public MoveTask(Point illegalPosition) {
         this.illegalPosition = illegalPosition;
     }
+
+    public Point getIllegalPosition() {
+        return illegalPosition;
+    }
 }

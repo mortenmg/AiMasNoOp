@@ -44,7 +44,20 @@ public class Agent extends Thread {
 
 
     private void moveToSafePlace(){
+        MovePlanner movePlanner = new MovePlanner(this.id);
+        ai.State s = new ai.State(null);
 
+        // Create a move task away from the agents own position.
+        MoveTask task = new MoveTask(position);
+
+
+        synchronized (this.plan) {
+            for (Command c : movePlanner.generatePlan(s, task)) {
+                this.plan.add(c);
+            }
+        }
+
+        //addPlan(movePlanner.generatePlan(s, task));
     }
 
     private void addPlan(LinkedList<ai.State> plan) {
@@ -65,6 +78,15 @@ public class Agent extends Thread {
         synchronized (this.plan) {
             return this.plan.peek();
         }
+    }
+
+    public void forceAddCommand(Command c) {
+        System.err.println(this+" waiting");
+        synchronized (this.plan) {
+            this.plan.addFirst(c);
+            System.err.println(this+" forced a null command to the queue: "+this.plan);
+        }
+        System.err.println(this+" done");
     }
 
 
