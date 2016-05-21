@@ -2,6 +2,8 @@ package ai;
 
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -26,7 +28,6 @@ public class Preprocessor {
     private HashMap<Integer, Box> boxes = new HashMap<>();
     private HashMap<Point, Integer> corridors = new HashMap<>();
 
-    private ArrayList<String> mapLines;
     private ArrayList<Agent> agents = new ArrayList<>();
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
 
@@ -38,19 +39,57 @@ public class Preprocessor {
         initializeCorridorTypes();
     }
 
+    public Preprocessor() {
+        System.err.println("+--------------------+");
+        System.err.println("+    PREPROCESSING   +");
+        System.err.println("+--------------------+");
+    }
+
     private void initializeCorridorTypes() {
 
     }
 
-    public List<Agent> readMap() throws IOException {
+    /**
+     * Wrapper method for the receiveMap() method.
+     * This sets the buffered reader to the
+     * System.in buffered reader for the
+     * server jar file.
+     *
+     * @throws IOException
+     */
+    public void receiveMapFromServer() throws IOException{
+        receiveMap(serverMessages);
+    }
 
-        mapLines = new ArrayList<String>();
-        Map<Character, String> colors = new HashMap<Character, String>();
+    /**
+     * Wrapper method for the receiveMap() method,
+     * that uses a level file for buffered reader
+     *
+     * @param fileName
+     * @throws IOException
+     */
+    public void receiveMapFromFile(String fileName) throws IOException {
+        receiveMap(new BufferedReader(new FileReader(fileName)));
+    }
+
+    /**
+     * This method reads a map from a buffered reader and stores it
+     * in temporary datastructures. These structures are then
+     * used in the readMap() method to construct the real
+     * data structures
+     *
+     * @param br
+     * @throws IOException
+     */
+    private void receiveMap(BufferedReader br) throws IOException {
+        ArrayList<String> mapLines = new ArrayList<>();
+
+        Map<Character, String> colors = new HashMap<>();
         String line, color;
-        int levelLine = 0;
+        int mapWidth = 0;
 
         // Read lines specifying colors
-        while ((line = serverMessages.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
+        while ((line = br.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$")) {
             line = line.replaceAll("\\s", "");
             color = line.split(":")[0];
 
@@ -58,18 +97,26 @@ public class Preprocessor {
                 colors.put(id.charAt(0), color);
         }
 
-        //Read maplines into a buffer to optimize the seize of the variables holding the map
-        while (!line.equals("")) {
+        //Read map lines into a buffer to optimize the seize of the variables holding the map
+        while (line != null && !line.equals("")) {
             mapLines.add(line);
             if (mapWidth < line.length()){
                 mapWidth = line.length();
             }
-            line = serverMessages.readLine();
+            line = br.readLine();
         }
+
+        readMap(mapLines, colors, mapWidth);
+    }
+
+    private List<Agent> readMap(ArrayList<String> mapLines, Map<Character, String> colors, int mapWidth) {
+
+        HashMap<Point,TestAgent> futureAgents = new HashMap<>();
 
         //Setting the map size
         mapHeight = mapLines.size();
-//        mapWidth = mapLines.get(0).length();
+        this.mapWidth = mapWidth;
+
         System.err.println("Map size: " + mapWidth + "," + mapHeight);
         this.walls = new char[mapHeight][mapWidth];
         this.cor = new int[mapHeight][mapWidth];
@@ -79,6 +126,8 @@ public class Preprocessor {
         int goalId = 0;
         int boxId = 0;
 
+        int levelLine = 0;
+
         // Read lines specifying level layout
         for (String ln : mapLines) {
             System.err.println(ln);
@@ -87,6 +136,7 @@ public class Preprocessor {
                 char id = ln.charAt(x);
                 if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
+                    futureAgents.put(new Point(x,levelLine), new TestAgent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
                     map[levelLine][x] = new Cell(CellType.EMPTY);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][x] = id;
@@ -114,6 +164,7 @@ public class Preprocessor {
         level = new Level(map);
         level.setIntBoxes(boxes);
         level.setGoals(goals);
+        level.setFutureAgents(futureAgents);
 
         //printCorridorMap();
 

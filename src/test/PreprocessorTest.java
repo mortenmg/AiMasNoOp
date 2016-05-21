@@ -1,10 +1,14 @@
 package test;
 
 import ai.Preprocessor;
+import ai.Supervisor;
 import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -14,7 +18,6 @@ import static org.junit.Assert.*;
 public class PreprocessorTest {
     @Test
     public void testReadMap() throws Exception {
-        //Preprocessor p = new Preprocessor(new BufferedReader( new InputStreamReader( System.in ) ));
         assertEquals(0,0);
     }
 

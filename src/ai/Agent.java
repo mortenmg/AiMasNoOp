@@ -80,16 +80,6 @@ public class Agent extends Thread {
         }
     }
 
-    public void forceAddCommand(Command c) {
-        System.err.println(this+" waiting");
-        synchronized (this.plan) {
-            this.plan.addFirst(c);
-            System.err.println(this+" forced a null command to the queue: "+this.plan);
-        }
-        System.err.println(this+" done");
-    }
-
-
     @Override
     public void run() {
         System.err.println(this+" Hello!");

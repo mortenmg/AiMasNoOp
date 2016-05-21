@@ -17,7 +17,7 @@ public class Level {
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
 
     private HashMap<Point,Box> futureBoxes = new HashMap<>();
-    private HashMap<Point, Agent> futureAgents = new HashMap<>(); // This has to be the shallow agents
+    private HashMap<Point, TestAgent> futureAgents = new HashMap<>(); // This has to be the shallow agents
 
     Level(Cell[][] map) {
         this.map = map;
@@ -86,7 +86,6 @@ public class Level {
                     int boxColPush = a.getPosition().x + dirToColChange(c.dir1);
 
                     Point boxPointPush = new Point(boxColPush, boxRowPush);
-
                     if (boxes.containsKey(boxPointPush) && futureBoxes.containsKey(boxPointPush)) { //Check if there is box to move
                         Box b2 = boxes.get(boxPointPush); //Get box
 
@@ -121,7 +120,7 @@ public class Level {
     }
 
     private void updateFutureAgent(Agent agent, Point newPos) {
-        Agent futureAgent = futureAgents.remove(agent.getPosition());
+        TestAgent futureAgent = futureAgents.remove(agent.getPosition());
         futureAgent.setPosition(newPos);
         futureAgents.put(newPos, futureAgent);
     }
@@ -137,10 +136,13 @@ public class Level {
      * are set to the future boxes and future agents.
      */
     public void updateToFuture() {
-        this.boxes = this.futureBoxes;
+        setBoxes(this.futureBoxes);
         this.futureBoxes.clear();
 
-        // TODO: update the point boxes as well.
+        for (TestAgent a: futureAgents.values()) {
+            Agent agent = Supervisor.getInstance().getAgents().get(a.getAgentId());
+            agent.setPosition(a.getPosition());
+        }
     }
 
     /**
@@ -169,7 +171,7 @@ public class Level {
         }
 
         // Checks the agents future position
-        for (Agent a : this.futureAgents.values()){
+        for (TestAgent a : this.futureAgents.values()){
             if (a.getPosition().equals(p))
                 return false;
         }
@@ -211,10 +213,18 @@ public class Level {
         return tmpBoxes;
     }
 
+    public HashMap<Point, Box> getFutureBoxes() {
+        HashMap<Point,Box> tmpBoxes = new HashMap<>();
+        for(Box b: futureBoxes.values()){
+            tmpBoxes.put(new Point(b.location), new Box(b));
+        }
+        return tmpBoxes;
+    }
+
     public HashMap<Point, Box> getBoxesWithPointKeys() {
         HashMap<Point,Box> tmpBoxes = new HashMap<>();
         for(Box b: intBoxes.values()){
-            tmpBoxes.put(b.location, new Box(b));
+            tmpBoxes.put(new Point(b.location), new Box(b));
         }
         return tmpBoxes;
     }
@@ -246,6 +256,17 @@ public class Level {
         for(Box b: this.intBoxes.values()){
             this.boxes.put(new Point(b.location),b);
         }
+    }
+
+    private void setBoxes(HashMap<Point, Box> boxes) {
+        this.boxes = getFutureBoxes();
+        for(Box b: this.boxes.values()) {
+            this.intBoxes.replace(b.id, b);
+        }
+    }
+
+    public void setFutureAgents(HashMap<Point, TestAgent> futureAgents) {
+        this.futureAgents = futureAgents;
     }
 
     public Box getBoxAtPosition(Point p){

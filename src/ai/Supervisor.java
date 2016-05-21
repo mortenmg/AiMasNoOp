@@ -15,19 +15,32 @@ public class Supervisor extends Thread {
     private List< Agent > agents = new ArrayList<>();
     private PriorityQueue<GoalTask> goalTasks = new PriorityQueue<>();
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
+
+    private boolean debugging = false;
+
+
     public final Queue<Message> supervisorMsgQueue;
 ;
     private Level level;
 
     public static void main( String[] args ) {
+
+        Preprocessor p = new Preprocessor(Supervisor.getInstance().getServerMessages());
+
+        try {
+            p.receiveMapFromServer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Supervisor.getInstance().setAgents(p.getAgents());
+        Supervisor.getInstance().setLevel(p.getLevel());
+        Supervisor.getInstance().setGoalTasks(p.getGoalTasks());
+
         System.err.println();
         System.err.println("+--------------------+");
         System.err.println("+       START        +");
         System.err.println("+--------------------+");
-
-        System.err.println( "[Supervisor] Hello!" );
-
-        // Retrieving the supervisor singleton
         Supervisor.getInstance().start();
     }
 
@@ -37,6 +50,7 @@ public class Supervisor extends Thread {
      */
     @Override
     public void run() {
+        System.err.println("Supervisor main loop!");
         for (Agent agent: agents) {
             agent.addSupervisor(this);
             agent.start();
@@ -45,11 +59,16 @@ public class Supervisor extends Thread {
         while(goalTasks.size() > 0){
             assignGoalTask();
 
-            this.level.prepareNextLevel();
+            level.prepareNextLevel();
             ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
 
-            if( sendActions(validCommands) ) {
+            if (debugging) {
+                System.out.println(validCommands);
                 level.updateToFuture();
+            } else {
+                if( sendActions(validCommands) ) {
+                    level.updateToFuture();
+                }
             }
 
         }
@@ -212,7 +231,6 @@ public class Supervisor extends Thread {
                 a.pollCommand();
                 cmds.add(a.getAgentId(), null);
             } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
-                System.err.println("[Supervisor] adding a command ");
                 cmds.add(a.getAgentId(),a.pollCommand());
                 valid = "valid";
             } else { // The move is invalid
@@ -226,11 +244,6 @@ public class Supervisor extends Thread {
                         if (otherAgent.commandQueueEmpty() && !a.isWorkingOnPlan()) { // The other agent is not doing anything
                             otherAgent.postMsg(new Message(MessageType.MoveToASafePlace));
                             cmds.add(a.getAgentId(), null);
-
-                            // TODO: THIS IS A QUICKFIX!
-                            Command noOp = new Command();
-                            a.forceAddCommand(noOp);
-
                             System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
                         } else {
                             cmds.add(a.getAgentId(), null);
@@ -292,24 +305,30 @@ public class Supervisor extends Thread {
      * pattern.
      */
     private Supervisor() {
-        Preprocessor p = new Preprocessor(serverMessages);
-
-        try {
-            System.err.println("+--------------------+");
-            System.err.println("+   PREPROCESSING    +");
-            System.err.println("+--------------------+");
-            p.readMap();
-            level = p.getLevel();
-            agents = p.getAgents();
-            goalTasks = p.getGoalTasks();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         this.supervisorMsgQueue = new LinkedList<>();
     }
 
+    public void setLevel(Level level) {
+        this.level = level;
+    }
+
+    public void setAgents(List<Agent> agents) {
+        this.agents = agents;
+    }
+
+    public void setGoalTasks(PriorityQueue<GoalTask> goalTasks) {
+        this.goalTasks = goalTasks;
+    }
+
+    public void setDebugging(boolean debugging) {
+        this.debugging = debugging;
+    }
+
     public Level getLevel() { return level; }
+
+    public BufferedReader getServerMessages() {
+        return serverMessages;
+    }
 
     public Agent getAgentWithId(int id) {
         return agents.get(id);

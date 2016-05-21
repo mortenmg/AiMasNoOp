@@ -58,16 +58,6 @@ public class Command {
 		dir2 = d2;
 	}
 
-	/**
-	 * NoOp Constructer
-	 * TODO: remove this.
-	 */
-	public Command(){
-		actType = type.NoOp;
-		dir1 = null;
-		dir2 = null;
-	}
-
 	public String toString() {
 		if ( actType == type.Move )
 			return actType.toString() + "(" + dir1 + ")";
