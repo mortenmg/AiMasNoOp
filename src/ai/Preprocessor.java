@@ -122,6 +122,11 @@ public class Preprocessor {
         this.cor = new int[mapHeight][mapWidth];
 
         this.map = new Cell[mapHeight][mapWidth];
+        for(int row = 0; row < mapHeight; row++){
+            for (int col = 0; col < mapWidth; col++){
+                this.map[row][col] = new Cell(CellType.EMPTY);
+            }
+        }
 
         int goalId = 0;
         int boxId = 0;
@@ -137,7 +142,7 @@ public class Preprocessor {
                 if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
                     futureAgents.put(new Point(x,levelLine), new TestAgent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
-                    map[levelLine][x] = new Cell(CellType.EMPTY);
+                    map[levelLine][x] = new Cell(CellType.AGENT);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][x] = id;
 //                    System.err.println("X:" + x + ", Y: " + levelLine + "Is wall");
@@ -148,7 +153,7 @@ public class Preprocessor {
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
-                    map[levelLine][x] = new Cell(CellType.EMPTY);
+                    map[levelLine][x] = new Cell(CellType.BOX,id);
                     boxId++;
                 } else {
                     map[levelLine][x] = new Cell(CellType.EMPTY);
@@ -252,7 +257,8 @@ public class Preprocessor {
             }
             if (boxBest != null){
                 GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId, boxBest.color);
-                goalTask.setWeight(cost);
+                goalTask.setWeight(goalTask.getWeight() + cost);
+                goalTask.setCost(cost);
                 goalTasks.offer(goalTask);
                 boxesCopy.remove(boxBest.id);
                 goalId++;

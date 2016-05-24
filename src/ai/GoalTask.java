@@ -10,6 +10,7 @@ public class GoalTask implements Task, Comparable<GoalTask> {
     private int boxId;
     private int goalId;
     private int weight;
+    private int cost;
     private String color;
 
     GoalTask(int boxId, int goalId, int taskId, String color){
@@ -37,6 +38,8 @@ public class GoalTask implements Task, Comparable<GoalTask> {
 
     public int getWeight(){return weight; }
 
+    public int getCost() {return cost;  }
+
     @Override
     public int compareTo(GoalTask o) {
         if (o.weight > this.weight){
@@ -46,6 +49,10 @@ public class GoalTask implements Task, Comparable<GoalTask> {
             return 1;
         }
         return 0;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
     }
 
     public void setWeight(int weight) {
