@@ -75,8 +75,9 @@ public class Supervisor extends Thread {
     }
 
     private void assignGoalTask() {
-        for (GoalTask gt : goalTasks) {
-
+        PriorityQueue<GoalTask> gts = new PriorityQueue<>(goalTasks);
+        for (GoalTask git : goalTasks) {
+            GoalTask gt = gts .poll();
             if (gt.getAgentId() != -1)
                 continue;
 

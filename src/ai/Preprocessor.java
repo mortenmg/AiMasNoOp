@@ -223,8 +223,8 @@ public class Preprocessor {
 
     //Find and prioritize the initial goal tasks of the map
     public PriorityQueue<GoalTask> getGoalTasks() {
+//        prioritizeGoals();
         PriorityQueue<GoalTask> goalTasks = new PriorityQueue<GoalTask>();
-
         HashMap<Integer, Box> boxesCopy = new HashMap<Integer,Box>(boxes);
 
         //Iterate through hashmap of goals
@@ -258,7 +258,9 @@ public class Preprocessor {
             }
             if (boxBest != null){
                 GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId, boxBest.color);
-                goalTask.setWeight(goalTask.getWeight() + cost);
+                int weight = findGoalWeight(goals.get(goalId));
+                goalTask.setWeight(weight + cost);
+//                goalTask.setWeight(goalTask.getWeight() + cost);
                 goalTask.setCost(cost);
                 goalTasks.offer(goalTask);
                 boxesCopy.remove(boxBest.id);
@@ -267,12 +269,42 @@ public class Preprocessor {
         }
 
         System.err.println("goalTasks Printout:");
-        for (GoalTask gt: goalTasks) {
+        PriorityQueue<GoalTask> printQueue = new PriorityQueue<>(goalTasks);
+        while(printQueue.peek() != null){
+            GoalTask gt = printQueue.poll();
             Goal g = goals.get(gt.getGoalId());
             Box b = boxes.get(gt.getBoxId());
-            System.err.println("GoalTasks - Task " + gt.getTaskId() + " Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")");
+
+            System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
+                    "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
+                    "TaskWeight: " + gt.getWeight());
         }
+
+//        for (GoalTask gt: goalTasks) {
+//            Goal g = goals.get(gt.getGoalId());
+//            Box b = boxes.get(gt.getBoxId());
+//            System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
+//                    "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
+//                    "TaskWeight: " + gt.getWeight());
+//        }
         return goalTasks;
+    }
+
+    private int findGoalWeight(Goal goal) {
+//        if(isCorridor(goal.point)){
+//           return 1000;
+//        }
+        return 0;
+    }
+
+    private void prioritizeGoals() {
+        Iterator goalIterator = goals.entrySet().iterator();
+        while(goalIterator.hasNext()){
+            Map.Entry goalPair = (Map.Entry)goalIterator.next();
+            Goal g = (Goal) goalPair.getValue();
+            Point p = g.point;
+
+        }
     }
 
 
@@ -326,7 +358,7 @@ public class Preprocessor {
         return false;
     }
 
-
+    private boolean isCorridor(Point p){ return isCorridor(p.y,p.x);}
     private boolean isCorridor(int row, int col) {
 
         //Vertical corridor
