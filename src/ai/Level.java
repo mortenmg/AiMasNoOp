@@ -19,6 +19,9 @@ public class Level {
     private HashMap<Point,Box> futureBoxes = new HashMap<>();
     private HashMap<Point, TestAgent> futureAgents = new HashMap<>(); // This has to be the shallow agents
 
+    private HashMap<Point, Integer> corridors = new HashMap<>(); // Point to the corridors
+    private Corridor[] corridorLocks; // See if they're locked.
+
     Level(Cell[][] map) {
         this.map = map;
     }
@@ -200,6 +203,29 @@ public class Level {
     }
 
     public HashMap<Integer,Goal> getGoals(){return goals;}
+
+    public void setCorridors(HashMap<Point,Integer> corridors){this.corridors = corridors;}
+
+    public void setCorridorLocks(Corridor[] locks){this.corridorLocks = locks;}
+
+    public boolean isCorridor(Point pos){
+        return corridors.get(pos) != null;
+    }
+
+    public boolean isCorridorLocked(Point pos){
+        if(corridors.get(pos) != null){
+            return corridorLocks[corridors.get(pos)].locked();
+        }else return false;
+    }
+
+    public void lockCorridor(Point pos, int agentId){
+        System.err.println("[Corridor] Value of the corridor: " + corridors.get(pos));
+        corridorLocks[corridors.get(pos)].lock(agentId);
+    }
+
+    public void unlockCorridor(Point pos, int agentId){
+        corridorLocks[corridors.get(pos)].unlock(agentId);
+    }
 
     /**
      * copy of boxes. So that level have the actual state of the boxes

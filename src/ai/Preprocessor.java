@@ -20,7 +20,7 @@ public class Preprocessor {
     int mapHeight = 0;
     int mapWidth = 0;
     private int [][] cor;
-    private Boolean[] corridorLocks;
+    private Corridor[] corridorLocks;
 
     private char[][] walls;
 
@@ -166,6 +166,10 @@ public class Preprocessor {
         level.setGoals(goals);
         level.setFutureAgents(futureAgents);
 
+        findCorridors(); // First find the corridors in the map
+        level.setCorridors(corridors);
+        level.setCorridorLocks(corridorLocks);
+
         //printCorridorMap();
 
         createGraphFromMap();
@@ -176,6 +180,24 @@ public class Preprocessor {
         //printCorridorMap(cor);
 
 //        sortAgents();
+
+        // Tetst the locks:
+        /*Point pointy = new Point(1,1);
+        System.err.println("[Corridor] is it a corridor? " + level.isCorridor(pointy));
+        if(level.isCorridor(pointy)){
+
+            level.lockCorridor(pointy,1);
+
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(pointy));
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(new Point(2,1)));
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(new Point(1,2))); // Not a corridor..
+
+            level.unlockCorridor(pointy,0);
+
+
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(pointy));
+        }*/
+
         return agents;
     }
 
@@ -292,9 +314,10 @@ public class Preprocessor {
             }
         }
 
-        corridorLocks = new Boolean[id-48];
+        corridorLocks = new Corridor[id-48];
+//        corridorLocks = new Boolean[id-48];
         for (int i = 0; i < id-48; i++) {
-            corridorLocks[i] = false;
+            corridorLocks[i] = new Corridor();
         }
         printCorridorMap();
     }
@@ -361,7 +384,7 @@ public class Preprocessor {
         if (c > (char) 0) {
             walls[row][col] = c;
             cor[row][col] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
-            corridors.put(new Point(row,col),Character.valueOf(c)-47);
+            corridors.put(new Point(row,col),Character.valueOf(c)-48);
             return false;
         } else {
             walls[row][col] = (char) id;
@@ -371,7 +394,7 @@ public class Preprocessor {
     }
 
     // Their value aee initially set to false
-    public Boolean[] getCorridorLocks(){
+    public Corridor[] getCorridorLocks(){
         return corridorLocks;
     }
 
