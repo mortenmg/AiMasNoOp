@@ -43,16 +43,15 @@ public class Agent extends Thread {
     }
 
 
-    private void moveToSafePlace(){
+    private void moveToSafePlace(Set<Point> illegalPoints){
         MovePlanner movePlanner = new MovePlanner(this.id);
-        ai.State s = new ai.State(null);
 
         // Create a move task away from the agents own position.
-        MoveTask task = new MoveTask(position);
+        MoveTask task = new MoveTask(position, illegalPoints);
 
 
         synchronized (this.plan) {
-            for (Command c : movePlanner.generatePlan(s, task)) {
+            for (Command c : movePlanner.generatePlan(task)) {
                 this.plan.add(c);
             }
         }
@@ -183,7 +182,8 @@ public class Agent extends Thread {
                 break;
             case MoveToASafePlace:
                 System.err.println(this + " I was asked to move to a safe place.");
-                moveToSafePlace();
+                isWorkingOnPlan = true;
+                moveToSafePlace((Set<Point>) msg.getPayload());
                 break;
             default:
                 break;
@@ -235,5 +235,33 @@ public class Agent extends Thread {
     @Override
     public String toString() {
         return "[Agent "+id+"]";
+    }
+
+
+    public Set<Point> getRestOfPlan() {
+        Set<Point> pointsInPlan = new HashSet<>();
+        Point agentPos = new Point(this.getPosition());
+        for (Command c : plan){
+            pointsInPlan.add(getNewAgentPosition(agentPos,c));
+            if ((getNewBoxPosition(agentPos,c))!= null)
+                pointsInPlan.add(getNewBoxPosition(agentPos,c));
+            agentPos = getNewAgentPosition(agentPos,c);
+        }
+        return pointsInPlan;
+    }
+
+    private Point getNewAgentPosition(Point agentPos, Command c){
+        int newAgentRow = agentPos.y + Command.dirToRowChange(c.dir1);
+        int newAgentCol = agentPos.x + Command.dirToColChange(c.dir1);
+        return new Point(newAgentCol, newAgentRow);
+    }
+
+    private Point getNewBoxPosition(Point agentPos, Command c) {
+        if (!(c.actType == Command.type.Move)){
+            int boxRow = agentPos.y + Command.dirToRowChange(c.dir2);
+            int boxCol = agentPos.x + Command.dirToColChange(c.dir2);
+            return new Point(boxCol, boxRow);
+        }
+        return null;
     }
 }

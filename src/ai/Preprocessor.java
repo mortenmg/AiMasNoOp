@@ -122,6 +122,12 @@ public class Preprocessor {
         this.cor = new int[mapHeight][mapWidth];
 
         this.map = new Cell[mapHeight][mapWidth];
+        for(int row = 0; row < mapHeight; row++){
+            for (int col = 0; col < mapWidth; col++){
+                this.map[row][col] = new Cell(CellType.EMPTY);
+                this.walls[row][col] = ' ';
+            }
+        }
 
         int goalId = 0;
         int boxId = 0;
@@ -148,7 +154,7 @@ public class Preprocessor {
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
-                    map[levelLine][x] = new Cell(CellType.EMPTY);
+                    map[levelLine][x] = new Cell(CellType.BOX,id);
                     boxId++;
                 } else {
                     map[levelLine][x] = new Cell(CellType.EMPTY);
@@ -274,7 +280,8 @@ public class Preprocessor {
             }
             if (boxBest != null){
                 GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId, boxBest.color);
-                goalTask.setWeight(cost);
+                goalTask.setWeight(goalTask.getWeight() + cost);
+                goalTask.setCost(cost);
                 goalTasks.offer(goalTask);
                 boxesCopy.remove(boxBest.id);
                 goalId++;
@@ -297,8 +304,8 @@ public class Preprocessor {
         int id = 48; //Ascii character '0'
 
 
-        for (int row = 0; row < walls.length; row++) {
-            for (int col = 0; col < walls[0].length; col++) {
+        for (int row = 1; row < walls.length-1; row++) {
+            for (int col = 1; col < walls[0].length-1; col++) {
 
                 //If cell is a wall, skip
                 c = walls[row][col];
