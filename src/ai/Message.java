@@ -1,5 +1,7 @@
 package ai;
 
+import java.util.Objects;
+
 /**
  * Created by Mathias on 14-04-2016.
  */
@@ -29,6 +31,7 @@ public class Message implements Comparable<Message> {
     private MessageType type;
     private GoalTask task;
     private int possibleBid;
+    private Object payload;
 
     /**
      * Simple message constructor
@@ -38,6 +41,13 @@ public class Message implements Comparable<Message> {
         this.receiver = Character.MIN_VALUE;
         this.sender = Character.MIN_VALUE;
         this.type = type;
+    }
+
+    Message(MessageType type, Object payload) {
+        this.receiver = Character.MIN_VALUE;
+        this.sender = Character.MIN_VALUE;
+        this.type = type;
+        this.payload = payload;
     }
 
     /**
@@ -100,6 +110,14 @@ public class Message implements Comparable<Message> {
 
     public int getBid(){
         return possibleBid;
+    }
+
+    public void setPayload(Object payload) {
+        this.payload = payload;
+    }
+
+    public Object getPayload() {
+        return payload;
     }
 }
 

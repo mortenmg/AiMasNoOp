@@ -20,7 +20,7 @@ public class Supervisor extends Thread {
 
 
     public final Queue<Message> supervisorMsgQueue;
-;
+
     private Level level;
 
     public static void main( String[] args ) {
@@ -226,10 +226,6 @@ public class Supervisor extends Thread {
                 a.setCurrentTask(null);
                 cmds.add(a.getAgentId(),null);
                 System.err.println("[Supervisor] I have received all actions from agent "+a.getAgentId());
-            } else if (c!=null && c.actType == Command.type.NoOp) {
-                System.err.println("[What] received a noop command");
-                a.pollCommand();
-                cmds.add(a.getAgentId(), null);
             } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
                 cmds.add(a.getAgentId(),a.pollCommand());
                 valid = "valid";
@@ -241,8 +237,8 @@ public class Supervisor extends Thread {
                         a.postMsg(new Message(MessageType.Replan));
                         cmds.add(a.getAgentId(),null);
                     } else if ((otherAgent = this.getAgentFromPoint(p)) != null){ // There is an agent in the way
-                        if (otherAgent.commandQueueEmpty() && !a.isWorkingOnPlan()) { // The other agent is not doing anything
-                            otherAgent.postMsg(new Message(MessageType.MoveToASafePlace));
+                        if (otherAgent.commandQueueEmpty() && !otherAgent.isWorkingOnPlan()) { // The other agent is not doing anything
+                            otherAgent.postMsg(new Message(MessageType.MoveToASafePlace, a.getRestOfPlan()));
                             cmds.add(a.getAgentId(), null);
                             System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
                         } else {
