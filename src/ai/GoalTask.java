@@ -12,12 +12,14 @@ public class GoalTask implements Task, Comparable<GoalTask> {
     private int weight;
     private int cost;
     private String color;
+    private int agentId;
 
     GoalTask(int boxId, int goalId, int taskId, String color){
         this.boxId = boxId;
         this.goalId = goalId;
         this.taskId = taskId;
         this.color = color;
+        this.agentId = -1;
     }
 
     public String getColor() {
@@ -57,5 +59,13 @@ public class GoalTask implements Task, Comparable<GoalTask> {
 
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    public void setAgentId(int agentId) {
+        this.agentId = agentId;
+    }
+
+    public int getAgentId() {
+        return agentId;
     }
 }

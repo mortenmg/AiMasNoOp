@@ -143,7 +143,7 @@ public class Preprocessor {
                 if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
                     futureAgents.put(new Point(x,levelLine), new TestAgent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
-                    map[levelLine][x] = new Cell(CellType.AGENT);
+                    map[levelLine][x] = new Cell(CellType.EMPTY);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][x] = id;
 //                    System.err.println("X:" + x + ", Y: " + levelLine + "Is wall");

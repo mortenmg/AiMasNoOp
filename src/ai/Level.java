@@ -176,7 +176,7 @@ public class Level {
                 return false;
         }
 
-        if(map[p.y][p.x].isFree() && !boxes.containsKey(p) && !futureBoxes.containsKey(p)){
+        if(map[p.y][p.x].getType() != CellType.WALL  && !boxes.containsKey(p) && !futureBoxes.containsKey(p)){
             return true;
         }else{
             return false;

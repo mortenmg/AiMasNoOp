@@ -75,31 +75,34 @@ public class Supervisor extends Thread {
     }
 
     private void assignGoalTask() {
-        for(GoalTask gt: goalTasks){
+        for (GoalTask gt : goalTasks) {
+
+            if (gt.getAgentId() != -1)
+                continue;
 
             Agent bestAgent = null;
             int currentBestBid = Integer.MAX_VALUE;
-            for (Agent a: agents) {
+            for (Agent a : agents) {
 
-                    if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
-                        Box gtBox = level.getBoxWithId(gt.getBoxId());
-                        if (gt.getColor() == a.getColor()) {
-                            //int agentBid = SimpleHeuristic.euclidean(a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y);
-                            int agentBid = SimpleHeuristic.distanceToGoal(level,a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y, gt.getGoalId());
-                            if (agentBid < currentBestBid) {
-                                currentBestBid = agentBid;
-                                bestAgent = a;
-                            }
+                if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
+                    Box gtBox = level.getBoxWithId(gt.getBoxId());
+                    if (gt.getColor() == a.getColor()) {
+                        int agentBid = SimpleHeuristic.distanceToGoal(level, a.getPosition().x, a.getPosition().y, gtBox.location.x, gtBox.location.y, gt.getGoalId());
+                        if (agentBid < currentBestBid) {
+                            currentBestBid = agentBid;
+                            bestAgent = a;
                         }
                     }
                 }
-                if (bestAgent != null) {
-                    System.err.println("[Supervisor] Assigned task #"+gt.getGoalId()+" to agent "+bestAgent.getAgentId());
-                    bestAgent.setCurrentTask(gt);
-                    bestAgent.postMsg(new Message(MessageType.Task));
-                }
+            }
+            if (bestAgent != null) {
+                System.err.println("[Supervisor] Assigned task #" + gt.getGoalId() + " to agent " + bestAgent.getAgentId());
+                gt.setAgentId(bestAgent.getAgentId());
+                bestAgent.setCurrentTask(gt);
+                bestAgent.postMsg(new Message(MessageType.Task));
             }
         }
+    }
 
 
     /**
@@ -244,6 +247,8 @@ public class Supervisor extends Thread {
                         } else {
                             cmds.add(a.getAgentId(), null);
                         }
+                    } else {
+                        cmds.add(a.getAgentId(),null);
                     }
                 } else { // There is no move
                     cmds.add(a.getAgentId(),null);
