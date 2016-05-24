@@ -125,6 +125,7 @@ public class Preprocessor {
         for(int row = 0; row < mapHeight; row++){
             for (int col = 0; col < mapWidth; col++){
                 this.map[row][col] = new Cell(CellType.EMPTY);
+                this.walls[row][col] = ' ';
             }
         }
 
@@ -281,8 +282,8 @@ public class Preprocessor {
         int id = 48; //Ascii character '0'
 
 
-        for (int row = 0; row < walls.length; row++) {
-            for (int col = 0; col < walls[0].length; col++) {
+        for (int row = 1; row < walls.length-1; row++) {
+            for (int col = 1; col < walls[0].length-1; col++) {
 
                 //If cell is a wall, skip
                 c = walls[row][col];
