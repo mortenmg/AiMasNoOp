@@ -174,6 +174,8 @@ public class Preprocessor {
         System.err.println("Number of boxes: " + boxes.size());
         System.err.println("Rows: "+map.length+" Cols: "+map[0].length);
 
+        Collections.sort(agents, (a1, a2) -> a1.getAgentId()-a2.getAgentId());
+
         level = new Level(map);
         level.setIntBoxes(boxes);
         level.setGoals(goals);
