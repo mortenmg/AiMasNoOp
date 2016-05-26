@@ -31,16 +31,6 @@ public class Agent extends Thread {
         this.position = position;
     }
 
-
-    private Planner planner;
-    public Planner getPlanner() {
-        return planner;
-    }
-
-    public void setPlanner(Planner planner) {
-        this.planner = planner;
-    }
-
     public Agent(int id, String color, Point position){
         this.id = id;
         this.position = position;

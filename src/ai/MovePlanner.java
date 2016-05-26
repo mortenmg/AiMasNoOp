@@ -8,7 +8,7 @@ import java.util.Queue;
 /**
  * Created by hvingelby on 5/17/16.
  */
-public class MovePlanner implements Planner{
+public class MovePlanner {
     private int agentId;
     private HashSet<SimpleNode> explored;
     private MoveTask task;
@@ -17,10 +17,6 @@ public class MovePlanner implements Planner{
         this.agentId = agentId;
     };
 
-    @Override
-    public LinkedList<State> generatePlan(State initialState, Task task) {
-        return null;
-    }
 
     public LinkedList<Command> generatePlan(MoveTask task) {
 
@@ -92,6 +88,11 @@ public class MovePlanner implements Planner{
         // TODO: Do a single lookup instead of looping
         for (Box b : Supervisor.getInstance().getLevel().getBoxes().values()) {
             if (b.location.x == col && b.location.y == row)
+                return false;
+        }
+
+        for (MAgent a : Supervisor.getInstance().getAgents()) {
+            if (a.getPosition().x == col && a.getPosition().y == row)
                 return false;
         }
 

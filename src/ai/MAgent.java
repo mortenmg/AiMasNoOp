@@ -22,7 +22,7 @@ public class MAgent extends Agent {
     }
 
     private boolean terminateFlag = false;
-    private Planner planner;
+    private AStarPlanner planner;
 
     public MAgent(int id, String color, Point position) {
         super(id,color,position);
@@ -76,35 +76,22 @@ public class MAgent extends Agent {
         System.err.println(this+" Hello!");
 
         while (!terminateFlag) {
-            // ai.MAgent will calculate a plan
             if (currentTask != null && agentMsgQueue.isEmpty()) {
-                isWorkingOnPlan = true;
-                System.err.println(this + " I am planning task #"+ currentTask.getTaskId());
-                ai.State s = new ai.State(null);
-                LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
 
-                // Just printing the plans actions
-                System.err.print(this + " My plan: ");
-                for (ai.State state : states) {
-                    System.err.print(state.action+" ");
-                }
-                System.err.println();
-
-                addPlan(states);
-                //currentTask = null; //TODO: After solution is sent to server the supervisor should mark this current task..
-                isWorkingOnPlan = false;
-                System.err.println(this + " Done planning task #"+ currentTask.getTaskId()+". The plan size is "+states.size());
             }
-
-
-            //addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
-
-            //ai.MAgent loop
-
             handleMessage(getMessage());
         }
-        System.err.println(getAgentId() + " terminated");
+        System.err.println(this + " Goodbye!");
 
+    }
+
+    private void printPlan(LinkedList<ai.State> states) {
+        // Just printing the plans actions
+        System.err.print(this + " My plan: ");
+        for (ai.State state : states) {
+            System.err.print(state.action+" ");
+        }
+        System.err.println();
     }
 
     public void setCurrentTask(GoalTask currentTask) {
@@ -113,7 +100,6 @@ public class MAgent extends Agent {
         }else{
             isWorkingOnPlan = true;
         }
-        //System.err.println("MAgent: " + this.id + "got task" + currentTask.getTaskId() );
         this.currentTask = currentTask;
     }
 
@@ -125,8 +111,9 @@ public class MAgent extends Agent {
     private void handleMessage(Message msg){
         switch (msg.getType()){
             case Task:
+                this.currentTask = (GoalTask) msg.getPayload();
+                generateTaskPlan((GoalTask) msg.getPayload());
                 break;
-
             case Help:
                 //Calc "bid" for help
                 //Return bid
@@ -136,7 +123,9 @@ public class MAgent extends Agent {
                 break;
             case Replan:
                 System.err.println(this + " I was asked to empty my action queue.");
-                this.plan.clear();
+                if (!replanTaskPlan(currentTask)) {
+                    System.err.println(this + " I could not replan :-( So I will ask my friends to help me!");
+                }
                 break;
             case MoveToASafePlace:
                 System.err.println(this + " I was asked to move to a safe place.");
@@ -147,6 +136,36 @@ public class MAgent extends Agent {
                 break;
 
         }
+    }
+
+    private void generateTaskPlan(GoalTask task) {
+        isWorkingOnPlan = true;
+        System.err.println(this + " I am planning task #"+task.getTaskId());
+        ai.State s = new ai.State(null);
+        LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
+        if (states == null) {
+            System.err.println(this + " I could not find a plan, so i will try finding a relaxed plan.");
+            states = planner.generatePlan(s,currentTask, true);
+        }
+        printPlan(states);
+
+        addPlan(states);
+        isWorkingOnPlan = false;
+    }
+
+    private boolean replanTaskPlan(GoalTask task) {
+        isWorkingOnPlan = true;
+
+        System.err.println(this + " I am replanning task #"+task.getTaskId());
+        ai.State s = new ai.State(null);
+        LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
+        if (states != null) {
+            this.plan.clear();
+            printPlan(states);
+            addPlan(states);
+            return true;
+        }
+        return false;
     }
 
     public void addSupervisor(Supervisor supervisor) {

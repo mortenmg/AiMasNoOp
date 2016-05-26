@@ -114,8 +114,7 @@ public class Supervisor extends Thread {
             if (bestAgent != null) {
                 System.err.println("[Supervisor] Assigned task #" + gt.getGoalId() + " to agent " + bestAgent.getAgentId());
                 gt.setAgentId(bestAgent.getAgentId());
-                bestAgent.setCurrentTask(gt);
-                bestAgent.postMsg(new Message(MessageType.Task));
+                bestAgent.postMsg(new Message(MessageType.Task, gt));
             }
         }
     }
@@ -193,7 +192,8 @@ public class Supervisor extends Thread {
                 }
                 // Why is the command invalid??
             }
-            System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
+            if (c!=null)
+                System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
         }
         return cmds;
     }

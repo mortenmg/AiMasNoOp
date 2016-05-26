@@ -11,7 +11,7 @@ import static ai.State.MAX_ROW;
 /**
  * Created by hvingelby on 4/19/16.
  */
-public class AStarPlanner implements Planner {
+public class AStarPlanner {
     private PriorityQueue<State> frontier;
     public HashSet<State> explored;
     public State initialState = null;
@@ -22,6 +22,10 @@ public class AStarPlanner implements Planner {
         this.agentId = agentId;
     }
 
+    public LinkedList<State> generatePlan(State initialState, Task task, boolean relaxed) {
+        initialState.setRelaxedPlanning(relaxed);
+        return generatePlan(initialState, task);
+    }
     // The planner generates a plan
     public LinkedList<State> generatePlan(State initialState, Task task) {
         SimpleHeuristic heuristic = new SimpleHeuristic(task, 0);
@@ -44,7 +48,7 @@ public class AStarPlanner implements Planner {
             }
 
             if (frontier.isEmpty()) {
-                System.err.println("The A* frontier is empty. Explored: "+explored.size());
+                System.err.println("[A*Planner] The A* frontier is empty. Explored: "+explored.size());
                 return null;
             }
 
