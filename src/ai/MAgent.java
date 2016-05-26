@@ -38,16 +38,14 @@ public class MAgent extends Agent {
         this.plan = new LinkedList<>();
     }
 
-    private void moveToSafePlace(){
+    private void moveToSafePlace(Set<Point> illegalPoints){
         MovePlanner movePlanner = new MovePlanner(getAgentId());
-        ai.State s = new ai.State(null);
 
         // Create a move task away from the agents own position.
-        MoveTask task = new MoveTask(getPosition());
-
+        MoveTask task = new MoveTask(getPosition(), illegalPoints);
 
         synchronized (this.plan) {
-            for (Command c : movePlanner.generatePlan(s, task)) {
+            for (Command c : movePlanner.generatePlan(task)) {
                 this.plan.add(c);
             }
         }
@@ -130,41 +128,7 @@ public class MAgent extends Agent {
         switch (msg.getType()){
             case Task:
                 break;
-            case Loser:
-                System.err.println(getAgentId() + " did not get : " + msg.getTask().getTaskId());
-                break;
-            case Winner:
-                //Make real plan!
-                currentTask = msg.getTask();
-                try {
-                    sleep(0);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
-                System.err.println(getAgentId() + " is winner of task: " + msg.getTask().getTaskId() + " - Performing task");
-
-                currentTask = null; //Im done with my task
-                break;
-
-            case TaskForBid:
-                if(currentTask == null){ //ai.MAgent is idle
-
-                    //Calc bid -- Currently random! - Use heuristic
-
-                    Random ran = new Random();
-                    int bidSize = ran.nextInt(10);
-                    System.err.println(getAgentId() + " bids " + bidSize);
-
-                    Message bid = new Message(bidSize,this.getAgentId(), msg.getTask());
-
-                    s.postMessageToSupervisor(bid);
-                }else{
-                    Message bid = new Message(Integer.MAX_VALUE, this.getAgentId(), msg.getTask()); //Send huge bid = im busy
-                    s.postMessageToSupervisor(bid);
-                }
-
-                break;
             case Help:
                 //Calc "bid" for help
                 //Return bid
@@ -178,7 +142,8 @@ public class MAgent extends Agent {
                 break;
             case MoveToASafePlace:
                 System.err.println(this + " I was asked to move to a safe place.");
-                moveToSafePlace();
+                isWorkingOnPlan = true;
+                moveToSafePlace((Set<Point>) msg.getPayload());
                 break;
             default:
                 break;
@@ -216,10 +181,42 @@ public class MAgent extends Agent {
         return isWorkingOnPlan;
     }
 
+    public Set<Point> getRestOfPlan() {
+        Set<Point> pointsInPlan = new HashSet<>();
+        Point agentPos = new Point(this.getPosition());
+        for (Command c : plan){
+            pointsInPlan.add(getNewAgentPosition(agentPos,c));
+            if ((getNewBoxPosition(agentPos,c))!= null)
+                pointsInPlan.add(getNewBoxPosition(agentPos,c));
+            agentPos = getNewAgentPosition(agentPos,c);
+        }
+        return pointsInPlan;
+    }
+
+    private Point getNewAgentPosition(Point agentPos, Command c){
+        int newAgentRow = agentPos.y + Command.dirToRowChange(c.dir1);
+        int newAgentCol = agentPos.x + Command.dirToColChange(c.dir1);
+        return new Point(newAgentCol, newAgentRow);
+    }
+
+    private Point getNewBoxPosition(Point agentPos, Command c) {
+        if (!(c.actType == Command.type.Move)){
+            int boxRow = agentPos.y + Command.dirToRowChange(c.dir2);
+            int boxCol = agentPos.x + Command.dirToColChange(c.dir2);
+            return new Point(boxCol, boxRow);
+        }
+        return null;
+    }
+
+
     /**
      * Method for getting a string representation
      * of an agent.
      * @return
      */
+    @Override
+    public String toString() {
+        return "[Agent "+getAgentId()+"]";
+    }
 
 }
