@@ -49,8 +49,6 @@ public class MAgent extends Agent {
                 this.plan.add(c);
             }
         }
-
-        //addPlan(movePlanner.generatePlan(s, task));
     }
 
     private void addPlan(LinkedList<ai.State> plan) {

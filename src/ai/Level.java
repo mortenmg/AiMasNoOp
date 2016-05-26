@@ -167,6 +167,10 @@ public class Level {
      * @return
      */
     private boolean isCellFree(Point p){
+
+        if (isCorridor(p)) {
+            System.err.println("The point "+p+" is a corridor");
+        }
         // Check the agents current position
         for(MAgent a: Supervisor.getInstance().getAgents()){
             if(a.getPosition().equals(p))

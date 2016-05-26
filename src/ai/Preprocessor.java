@@ -174,6 +174,8 @@ public class Preprocessor {
         System.err.println("Number of boxes: " + boxes.size());
         System.err.println("Rows: "+map.length+" Cols: "+map[0].length);
 
+        Collections.sort(agents, (a1, a2) -> a1.getAgentId()-a2.getAgentId());
+
         level = new Level(map);
         level.setIntBoxes(boxes);
         level.setGoals(goals);
@@ -279,7 +281,7 @@ public class Preprocessor {
                 int weight = findGoalWeight(goals.get(goalId));
                 goalTask.setWeight(weight + cost);
 //                goalTask.setWeight(goalTask.getWeight() + cost);
-                goalTask.setCost(cost);
+                goalTask.setCost(cost%500);
                 goalTasks.offer(goalTask);
                 boxesCopy.remove(boxBest.id);
                 goalId++;
@@ -295,7 +297,7 @@ public class Preprocessor {
 
             System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
                     "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
-                    "TaskWeight: " + gt.getWeight());
+                    "TaskWeight: " + gt.getWeight() + " TaskCost: " + gt.getCost());
         }
 
 //        for (GoalTask gt: goalTasks) {
