@@ -8,21 +8,28 @@ import java.util.ArrayList;
  */
 public class Corridor {
 
-    private ArrayList<Point> cells; // Do we need to know this
-    private boolean locked;
+    private boolean locked = false;
+    private int agent = -1;
 
-    Corridor(Point cell){
-        cells = new ArrayList<>();
-        cells.add(cell);
-    }
-
-    public void lock(){
-        locked = true;
-    }
-
-    private void unlock(){
+    Corridor(){
         locked = false;
+        agent = -1;
     }
 
+    public void lock(int agentID){
+        locked = true;
+        agent = agentID;
+    }
+
+    public void unlock(int agentID){
+        if(agentID == this.agent){
+            locked = false;
+            this.agent = -1;
+        }
+    }
+
+    public boolean locked(){
+        return locked;
+    }
 
 }

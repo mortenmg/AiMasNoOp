@@ -60,19 +60,6 @@ public class Cell {
         return type;
     }
 
-    public void setType(CellType type, Integer boxId) {
-        this.type = type;
-        if (type == CellType.EMPTY && boxId == null){
-            this.isFree = true;
-        }else{
-            this.goalId = boxId;
-            this.isFree = false;
-        }
-    }
-
-    public boolean isFree() {
-        return isFree;
-    }
 
     public Integer getGoalId() {
         return goalId;
@@ -83,6 +70,5 @@ enum CellType {
     EMPTY,
     WALL,
     GOAL,
-    BOX,
-    AGENT
+    BOX
 }

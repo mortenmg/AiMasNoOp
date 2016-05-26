@@ -19,7 +19,7 @@ public class Preprocessor {
     int mapHeight = 0;
     int mapWidth = 0;
     private int [][] cor;
-    private Boolean[] corridorLocks;
+    private Corridor[] corridorLocks;
 
     private char[][] walls;
 
@@ -124,6 +124,12 @@ public class Preprocessor {
         SAState.MAX_COLUMN = mapWidth;
         SAState.MAX_ROW = mapHeight;
         this.map = new Cell[mapHeight][mapWidth];
+        for(int row = 0; row < mapHeight; row++){
+            for (int col = 0; col < mapWidth; col++){
+                this.map[row][col] = new Cell(CellType.EMPTY);
+                this.walls[row][col] = ' ';
+            }
+        }
 
         SAState.goals = new char[SAState.MAX_ROW][SAState.MAX_COLUMN];
         SAState.walls = new boolean[SAState.MAX_ROW][SAState.MAX_COLUMN];
@@ -155,7 +161,7 @@ public class Preprocessor {
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
-                    map[levelLine][x] = new Cell(CellType.EMPTY);
+                    map[levelLine][x] = new Cell(CellType.BOX,id);
                     boxId++;
                 } else {
                     map[levelLine][x] = new Cell(CellType.EMPTY);
@@ -173,6 +179,10 @@ public class Preprocessor {
         level.setGoals(goals);
         level.setFutureAgents(futureAgents);
 
+        findCorridors(); // First find the corridors in the map
+        level.setCorridors(corridors);
+        level.setCorridorLocks(corridorLocks);
+
         //printCorridorMap();
 
         createGraphFromMap();
@@ -183,6 +193,24 @@ public class Preprocessor {
         //printCorridorMap(cor);
 
 //        sortAgents();
+
+        // Tetst the locks:
+        /*Point pointy = new Point(1,1);
+        System.err.println("[Corridor] is it a corridor? " + level.isCorridor(pointy));
+        if(level.isCorridor(pointy)){
+
+            level.lockCorridor(pointy,1);
+
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(pointy));
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(new Point(2,1)));
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(new Point(1,2))); // Not a corridor..
+
+            level.unlockCorridor(pointy,0);
+
+
+            System.err.println("[Corridor] is the corridor locked?" + level.isCorridorLocked(pointy));
+        }*/
+
         return agents;
     }
 
@@ -213,8 +241,8 @@ public class Preprocessor {
 
     //Find and prioritize the initial goal tasks of the map
     public PriorityQueue<GoalTask> getGoalTasks() {
+//        prioritizeGoals();
         PriorityQueue<GoalTask> goalTasks = new PriorityQueue<GoalTask>();
-
         HashMap<Integer, Box> boxesCopy = new HashMap<Integer,Box>(boxes);
 
         //Iterate through hashmap of goals
@@ -248,7 +276,10 @@ public class Preprocessor {
             }
             if (boxBest != null){
                 GoalTask goalTask = new GoalTask(boxBest.id,g.id,goalId, boxBest.color);
-                goalTask.setWeight(cost);
+                int weight = findGoalWeight(goals.get(goalId));
+                goalTask.setWeight(weight + cost);
+//                goalTask.setWeight(goalTask.getWeight() + cost);
+                goalTask.setCost(cost);
                 goalTasks.offer(goalTask);
                 boxesCopy.remove(boxBest.id);
                 goalId++;
@@ -256,12 +287,42 @@ public class Preprocessor {
         }
 
         System.err.println("goalTasks Printout:");
-        for (GoalTask gt: goalTasks) {
+        PriorityQueue<GoalTask> printQueue = new PriorityQueue<>(goalTasks);
+        while(printQueue.peek() != null){
+            GoalTask gt = printQueue.poll();
             Goal g = goals.get(gt.getGoalId());
             Box b = boxes.get(gt.getBoxId());
-            System.err.println("GoalTasks - Task " + gt.getTaskId() + " Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")");
+
+            System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
+                    "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
+                    "TaskWeight: " + gt.getWeight());
         }
+
+//        for (GoalTask gt: goalTasks) {
+//            Goal g = goals.get(gt.getGoalId());
+//            Box b = boxes.get(gt.getBoxId());
+//            System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
+//                    "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
+//                    "TaskWeight: " + gt.getWeight());
+//        }
         return goalTasks;
+    }
+
+    private int findGoalWeight(Goal goal) {
+//        if(isCorridor(goal.point)){
+//           return 1000;
+//        }
+        return 0;
+    }
+
+    private void prioritizeGoals() {
+        Iterator goalIterator = goals.entrySet().iterator();
+        while(goalIterator.hasNext()){
+            Map.Entry goalPair = (Map.Entry)goalIterator.next();
+            Goal g = (Goal) goalPair.getValue();
+            Point p = g.point;
+
+        }
     }
 
 
@@ -271,8 +332,8 @@ public class Preprocessor {
         int id = 48; //Ascii character '0'
 
 
-        for (int row = 0; row < walls.length; row++) {
-            for (int col = 0; col < walls[0].length; col++) {
+        for (int row = 1; row < walls.length-1; row++) {
+            for (int col = 1; col < walls[0].length-1; col++) {
 
                 //If cell is a wall, skip
                 c = walls[row][col];
@@ -288,9 +349,10 @@ public class Preprocessor {
             }
         }
 
-        corridorLocks = new Boolean[id-48];
+        corridorLocks = new Corridor[id-48];
+//        corridorLocks = new Boolean[id-48];
         for (int i = 0; i < id-48; i++) {
-            corridorLocks[i] = false;
+            corridorLocks[i] = new Corridor();
         }
         printCorridorMap();
     }
@@ -315,7 +377,7 @@ public class Preprocessor {
         return false;
     }
 
-
+    private boolean isCorridor(Point p){ return isCorridor(p.y,p.x);}
     private boolean isCorridor(int row, int col) {
 
         //Vertical corridor
@@ -357,7 +419,7 @@ public class Preprocessor {
         if (c > (char) 0) {
             walls[row][col] = c;
             cor[row][col] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
-            corridors.put(new Point(row,col),Character.valueOf(c)-47);
+            corridors.put(new Point(row,col),Character.valueOf(c)-48);
             return false;
         } else {
             walls[row][col] = (char) id;
@@ -367,7 +429,7 @@ public class Preprocessor {
     }
 
     // Their value aee initially set to false
-    public Boolean[] getCorridorLocks(){
+    public Corridor[] getCorridorLocks(){
         return corridorLocks;
     }
 

@@ -10,13 +10,16 @@ public class GoalTask implements Task, Comparable<GoalTask> {
     private int boxId;
     private int goalId;
     private int weight;
+    private int cost;
     private String color;
+    private int agentId;
 
     GoalTask(int boxId, int goalId, int taskId, String color){
         this.boxId = boxId;
         this.goalId = goalId;
         this.taskId = taskId;
         this.color = color;
+        this.agentId = -1;
     }
 
     public String getColor() {
@@ -37,18 +40,33 @@ public class GoalTask implements Task, Comparable<GoalTask> {
 
     public int getWeight(){return weight; }
 
+    public int getCost() {return cost;  }
+
     @Override
+    //Prioritizes
     public int compareTo(GoalTask o) {
         if (o.weight > this.weight){
-            return -1;
+            return 1;
         }
         else if (o.weight < this.weight){
-            return 1;
+            return -1;
         }
         return 0;
     }
 
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    public void setAgentId(int agentId) {
+        this.agentId = agentId;
+    }
+
+    public int getAgentId() {
+        return agentId;
     }
 }

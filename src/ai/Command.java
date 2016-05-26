@@ -70,4 +70,14 @@ public class Command {
 		return "[" + this.toString() + "]";
 	}
 
+
+	public static int dirToRowChange( Command.dir d ) {
+		return ( d == Command.dir.S ? 1 : ( d == Command.dir.N ? -1 : 0 ) ); // South is down one row (1), north is up one row (-1)
+	}
+
+	public static int dirToColChange( Command.dir d ) {
+		return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
+	}
+
+
 }
