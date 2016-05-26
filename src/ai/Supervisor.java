@@ -192,7 +192,6 @@ public class Supervisor extends Thread {
                     cmds.add(a.getAgentId(),null);
                 }
                 // Why is the command invalid??
-
             }
             System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
         }

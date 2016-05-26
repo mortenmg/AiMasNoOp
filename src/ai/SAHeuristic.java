@@ -1,6 +1,7 @@
 package ai;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
@@ -9,29 +10,60 @@ import java.util.PriorityQueue;
  */
 public class SAHeuristic implements Comparator<SAState> {
 
-    public SAHeuristic(){}
+    private ArrayList<GoalTask> sortedGoalTask;
+    private float goalPriorityWeight = 0.5f;
+    private int agentApprochBonus = 0;
+
+
+    public SAHeuristic(){    }
 
     @Override
     public int compare(SAState n1, SAState n2) {
-        return f( n1 ) - f( n2 );
+        if(f( n1 ) > f( n2 ))
+            return 1;
+        else if(f( n1 ) < f( n2 ))
+            return -1;
+        else
+        return 0;
     }
 
-    private int f(SAState n){
+    private float f(SAState n){
         return h( n );
     }
 
-    private int h(SAState n ) {
+    private float h(SAState n ) {
 
-        int h = 0;
+        if(sortedGoalTask == null){
+            sortedGoalTask = new ArrayList<>();
+            PriorityQueue<GoalTask> goalTasks = Supervisor.getInstance().getGoalTasks();
+            while(!goalTasks.isEmpty()){
+                sortedGoalTask.add(goalTasks.poll());
+            }
+            goalTasks.addAll(sortedGoalTask);
+        }
+
+        float h = 0;
         PriorityQueue<GoalTask> goalTasks = Supervisor.getInstance().getGoalTasks();
 
-        for(GoalTask gt: goalTasks) {
+        float goalTaskIterWeight = 1;
+        boolean agentApproachingBoxFlag = false;
 
+
+        for(GoalTask gt: sortedGoalTask) {
             //Point goalPos = Supervisor.getInstance().getLevel().getGoals().get(gt.getGoalId()).point;
             Point boxPos = n.getBoxWithIdPos(gt.getBoxId());
-            h += Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(boxPos.x,boxPos.y, gt.getGoalId());
+            h += (Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(boxPos.x,boxPos.y, gt.getGoalId()) * goalTaskIterWeight);
             //h += SimpleHeuristic.euclidean(goalPos.x, goalPos.y, boxPos.x, boxPos.y);
+            if(n.parent != null) {
+                if (SimpleHeuristic.euclidean(n.agentCol, n.agentRow, boxPos.x, boxPos.y) < SimpleHeuristic.euclidean(n.parent.agentCol, n.parent.agentRow, boxPos.x, boxPos.y)){
+                    agentApproachingBoxFlag = true;
+                }
+            }
+            goalTaskIterWeight += goalPriorityWeight;
         }
+
+        if(agentApproachingBoxFlag)
+            h -= agentApprochBonus;
         return h;
     }
             /*
