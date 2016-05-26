@@ -17,7 +17,7 @@ public class Level {
     private ArrayList<ArrayList<Node>> graph = new ArrayList<>();
 
     private HashMap<Point,Box> futureBoxes = new HashMap<>();
-    private HashMap<Point, TestAgent> futureAgents = new HashMap<>(); // This has to be the shallow agents
+    private HashMap<Point, Agent> futureAgents = new HashMap<>(); // This has to be the shallow agents
 
     Level(Cell[][] map) {
         this.map = map;
@@ -36,7 +36,7 @@ public class Level {
      * @param a The agent that is performing an action
      * @return
      */
-    public Point conflictingCellFromMove(Command c, Agent a) {
+    public Point conflictingCellFromMove(Command c, MAgent a) {
         Point conflictingCell = new Point(-1, -1);
 
         if(c != null) {
@@ -119,8 +119,8 @@ public class Level {
         return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
     }
 
-    private void updateFutureAgent(Agent agent, Point newPos) {
-        TestAgent futureAgent = futureAgents.remove(agent.getPosition());
+    private void updateFutureAgent(MAgent agent, Point newPos) {
+        Agent futureAgent = futureAgents.remove(agent.getPosition());
         futureAgent.setPosition(newPos);
         futureAgents.put(newPos, futureAgent);
     }
@@ -139,8 +139,8 @@ public class Level {
         setBoxes(this.futureBoxes);
         this.futureBoxes.clear();
 
-        for (TestAgent a: futureAgents.values()) {
-            Agent agent = Supervisor.getInstance().getAgents().get(a.getAgentId());
+        for (Agent a: futureAgents.values()) {
+            MAgent agent = Supervisor.getInstance().getAgents().get(a.getAgentId());
             agent.setPosition(a.getPosition());
         }
     }
@@ -165,13 +165,13 @@ public class Level {
      */
     private boolean isCellFree(Point p){
         // Check the agents current position
-        for(Agent a: Supervisor.getInstance().getAgents()){
+        for(MAgent a: Supervisor.getInstance().getAgents()){
             if(a.getPosition().equals(p))
                 return false;
         }
 
         // Checks the agents future position
-        for (TestAgent a : this.futureAgents.values()){
+        for (Agent a : this.futureAgents.values()){
             if (a.getPosition().equals(p))
                 return false;
         }
@@ -265,7 +265,7 @@ public class Level {
         }
     }
 
-    public void setFutureAgents(HashMap<Point, TestAgent> futureAgents) {
+    public void setFutureAgents(HashMap<Point, Agent> futureAgents) {
         this.futureAgents = futureAgents;
     }
 

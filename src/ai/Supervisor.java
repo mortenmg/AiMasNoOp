@@ -12,15 +12,16 @@ import java.util.stream.Collectors;
  * Created by hvingelby on 4/5/16.
  */
 public class Supervisor extends Thread {
-    private List< Agent > agents = new ArrayList<>();
+    private List<MAgent> agents = new ArrayList<>();
+
+    private SAgent singleAgent;
     private PriorityQueue<GoalTask> goalTasks = new PriorityQueue<>();
     private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
 
     private boolean debugging = false;
 
-
     public final Queue<Message> supervisorMsgQueue;
-;
+
     private Level level;
 
     public static void main( String[] args ) {
@@ -50,12 +51,21 @@ public class Supervisor extends Thread {
      */
     @Override
     public void run() {
-        System.err.println("Supervisor main loop!");
-        for (Agent agent: agents) {
-            agent.addSupervisor(this);
-            agent.start();
+
+        if(agents.size() == 0){
+            this.singleAgent.start();
+            singleAgentLoop();
+        }else {
+            for (MAgent agent : agents) {
+                agent.addSupervisor(this);
+                agent.start();
+            }
+            multiAgentLoop();
         }
 
+    }
+
+    private void multiAgentLoop() {
         while(goalTasks.size() > 0){
             assignGoalTask();
 
@@ -74,12 +84,17 @@ public class Supervisor extends Thread {
         }
     }
 
+    private void singleAgentLoop() { //Make supervisor available until agent is done, but agent handles everything
+        while(true){}
+    }
+
+
     private void assignGoalTask() {
         for(GoalTask gt: goalTasks){
 
-            Agent bestAgent = null;
+            MAgent bestAgent = null;
             int currentBestBid = Integer.MAX_VALUE;
-            for (Agent a: agents) {
+            for (MAgent a: agents) {
 
                     if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
                         Box gtBox = level.getBoxWithId(gt.getBoxId());
@@ -102,88 +117,20 @@ public class Supervisor extends Thread {
         }
 
 
-    /**
-     *Internal method for getting an agent from its name.
-     **/
-    private Agent getAgentFromName(int agentName){
-        List<Agent> allAgents = agents.stream().filter(c -> c.getAgentId() == agentName).collect(Collectors.toList());
-        return allAgents.get(0);
+
+    public SAgent getSingleAgent() {
+        return singleAgent;
     }
 
-    private Agent getAgentFromPoint(Point p){
-        for(Agent a: agents){
+    private MAgent getAgentFromPoint(Point p){
+        for(MAgent a: agents){
             if (a.getPosition().equals(p))
                 return a;
         }
         return null;
     }
 
-    private int getCountOfBidsInQueue(){
-        int count = (int) supervisorMsgQueue.stream().filter(c -> c.getType() == MessageType.Bid).count();
-        return count;
-    }
 
-    private void handleBidsOnTask(){
-        synchronized (this) {
-            while (supervisorMsgQueue.size() < agents.size()) {
-                try {
-                    System.err.println("Waiting for all bids");
-
-                    wait(); //TODO: Wait only for some time!
-                } catch (Exception e) {
-                    System.err.println("junk");
-                    System.err.println(e.getClass());
-                }
-            }
-            announceWinnerOfTask();
-        }
-    }
-
-    /**
-     * returns all bid messages from message queue, these are removed
-     * @return
-     */
-    private List<Message> getBidsFromQueue(){
-        Iterator<Message> i = supervisorMsgQueue.iterator();
-
-        List<Message> bids = new ArrayList<>();
-
-        while(i.hasNext()){
-            Message next = i.next();
-            if(next.getType() == MessageType.Bid){
-                bids.add(next);
-                i.remove();
-            }
-        }
-
-        return bids;
-    }
-
-    private void announceWinnerOfTask(){
-
-        List<Message> bids = getBidsFromQueue();
-
-        Message minBid = Collections.min(bids);
-
-        for (Message bid : bids) {
-            int receiver = bid.getSender();
-            if (bid == minBid) {
-                sendMessageToAgent(getAgentFromName(receiver), new Message(bid.getTask(), MessageType.Winner));
-            } else {
-                sendMessageToAgent(getAgentFromName(receiver), new Message(bid.getTask(), MessageType.Loser));
-            }
-        }
-        supervisorMsgQueue.clear();
-    }
-
-    /**
-     * send message to single agent
-     * @param a Agent to send message to
-     * @param msg Message to send
-     */
-    private synchronized void sendMessageToAgent(Agent a, Message msg) {
-        a.postMsg(msg);
-    }
 
     /**
      * Post a message to supervisor message queue
@@ -193,17 +140,7 @@ public class Supervisor extends Thread {
         notify();
     }
 
-    /**
-     * Broadcast message to all agents
-     * @param msg
-     */
-    public void broadcastMessage(Message msg){
-        System.err.println("Supervisor: Broadcasting - " + msg.getTask().getTaskId());
 
-        for (Agent a: agents) {
-            a.postMsg(msg);
-        }
-    }
 
     /**
      * This method is receiving the actions from the agents
@@ -217,7 +154,7 @@ public class Supervisor extends Thread {
         ArrayList<Command> cmds = new ArrayList<>();
         Point p;
 
-        for (Agent a: agents){
+        for (MAgent a: agents){
             String valid = "invalid";
             Command c = a.peekTopCommand();
             if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
@@ -236,7 +173,7 @@ public class Supervisor extends Thread {
             } else { // The move is invalid
                 if (!p.equals(new Point(-1,-1))) {
                     Box b;
-                    Agent otherAgent;
+                    MAgent otherAgent;
                     if ((b = level.getBoxAtPosition(p)) != null){ // There is a box in the way.
                         a.postMsg(new Message(MessageType.Replan));
                         cmds.add(a.getAgentId(),null);
@@ -313,11 +250,21 @@ public class Supervisor extends Thread {
     }
 
     public void setAgents(List<Agent> agents) {
-        this.agents = agents;
+        if(agents.size() == 1){
+            singleAgent = new SAgent(agents.get(0));
+        }else{
+            for(Agent a: agents){
+                this.agents.add(new MAgent(a));
+            }
+        }
     }
 
     public void setGoalTasks(PriorityQueue<GoalTask> goalTasks) {
         this.goalTasks = goalTasks;
+    }
+
+    public PriorityQueue<GoalTask> getGoalTasks() {
+        return goalTasks;
     }
 
     public void setDebugging(boolean debugging) {
@@ -330,11 +277,11 @@ public class Supervisor extends Thread {
         return serverMessages;
     }
 
-    public Agent getAgentWithId(int id) {
+    public MAgent getAgentWithId(int id) {
         return agents.get(id);
     }
 
-    public List<Agent> getAgents() {
+    public List<MAgent> getAgents() {
         return agents;
     }
 }

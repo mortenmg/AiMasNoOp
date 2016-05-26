@@ -53,7 +53,7 @@ public class MovePlanner implements Planner{
             if (b.location.x == child.p.x && b.location.y == child.p.y)
                 return false;
         }
-        for (Agent b : Supervisor.getInstance().getAgents()) {
+        for (MAgent b : Supervisor.getInstance().getAgents()) {
             if (b.getPosition().x == child.p.x && b.getPosition().y == child.p.y)
                 return false;
         }

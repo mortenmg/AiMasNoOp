@@ -2,7 +2,6 @@ package ai;
 
 import java.awt.*;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -111,17 +110,23 @@ public class Preprocessor {
 
     private List<Agent> readMap(ArrayList<String> mapLines, Map<Character, String> colors, int mapWidth) {
 
-        HashMap<Point,TestAgent> futureAgents = new HashMap<>();
+        HashMap<Point, Agent> futureAgents = new HashMap<>();
 
         //Setting the map size
         mapHeight = mapLines.size();
         this.mapWidth = mapWidth;
 
+
         System.err.println("Map size: " + mapWidth + "," + mapHeight);
         this.walls = new char[mapHeight][mapWidth];
         this.cor = new int[mapHeight][mapWidth];
 
+        SAState.MAX_COLUMN = mapWidth;
+        SAState.MAX_ROW = mapHeight;
         this.map = new Cell[mapHeight][mapWidth];
+
+        SAState.goals = new char[SAState.MAX_ROW][SAState.MAX_COLUMN];
+        SAState.walls = new boolean[SAState.MAX_ROW][SAState.MAX_COLUMN];
 
         int goalId = 0;
         int boxId = 0;
@@ -136,15 +141,17 @@ public class Preprocessor {
                 char id = ln.charAt(x);
                 if ('0' <= id && id <= '9') { //If agent
                     agents.add(new Agent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
-                    futureAgents.put(new Point(x,levelLine), new TestAgent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
+                    futureAgents.put(new Point(x,levelLine), new Agent(Character.getNumericValue(id), colors.get(id), new Point(x,levelLine)));
                     map[levelLine][x] = new Cell(CellType.EMPTY);
                 } else if (id == '+') { //If wall
                     this.walls[levelLine][x] = id;
+                    SAState.walls[levelLine][x] = true;
 //                    System.err.println("X:" + x + ", Y: " + levelLine + "Is wall");
                     map[levelLine][x] = new Cell(CellType.WALL);
                 } else if ('a' <= id && id <= 'z') { //If goal
                     goals.put(goalId, new Goal(goalId, id, new Point(x, levelLine)));
                     map[levelLine][x] = new Cell(CellType.GOAL, goalId);
+                    SAState.goals[levelLine][x] = id;
                     goalId++;
                 } else if ('A' <= id && id <= 'Z') { //If boxes
                     boxes.put(boxId, new Box(boxId, id, colors.get(id), new Point(x, levelLine)));
@@ -193,17 +200,6 @@ public class Preprocessor {
             GraphToolkit.dijkstra(allNodes,n);
             System.err.println("dikjstra: "+ n.getId());
         }
-    }
-
-    private void sortAgents() {
-        ArrayList<Agent> tmpagents = new ArrayList<>();
-        Agent a = agents.get(0);
-
-        for (Agent a1: agents ) {
-            tmpagents.add(a.getAgentId(), a1);
-        }
-
-        agents = tmpagents;
     }
 
     public Cell[][] getMap() {

@@ -49,7 +49,7 @@ public class AStarPlanner implements Planner {
             }
 
             State leafState = frontier.poll();
-            //System.err.println("We are now exploring #state "+iterations+ " #Agent pos "+leafState.agentCol+","+leafState.agentRow+ " #Action: "+leafState.action + " #Box "+leafState.getBoxes().get(0).location);
+            //System.err.println("We are now exploring #state "+iterations+ " #MAgent pos "+leafState.agentCol+","+leafState.agentRow+ " #Action: "+leafState.action + " #Box "+leafState.getBoxes().get(0).location);
 
             if (isGoalState(leafState, task)) {
                 return leafState.extractPlan();
@@ -83,7 +83,7 @@ public class AStarPlanner implements Planner {
      * @return Boolean
      */
     private boolean isGoalState(State state, Task task) {
-        //System.err.println("Is this state a goal state? Box: "+state.getBoxes().get(0).location+" Agent: "+state.agentRow+", "+state.agentCol);
+        //System.err.println("Is this state a goal state? Box: "+state.getBoxes().get(0).location+" MAgent: "+state.agentRow+", "+state.agentCol);
         Box box = state.getBoxes().get(task.getBoxId());
         Goal g = Supervisor.getInstance().getLevel().getGoalWithId(task.getGoalId());
         return box.location.equals(g.point);

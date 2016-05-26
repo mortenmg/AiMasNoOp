@@ -61,7 +61,7 @@
         Windows: $ java -jar server.jar -l levels/SAsokobanLevel96.lvl -c "java sampleclients.GuiClient" -g 200
         Linux:   $ java -Dsun.java2d.opengl=true -jar server.jar -l levels/SAsokobanLevel96.lvl -c "java sampleclients.GuiClient" -g 200
     
-    GuiClient works by creating a joint action of identical individual actions for each agent on the level; e.g. clicking Move(W) on a level with 3 agents sends [Move(W),Move(W),Move(W)].
+    GuiClient works by creating a joint action of identical individual actions for each MAgent on the level; e.g. clicking Move(W) on a level with 3 agents sends [Move(W),Move(W),Move(W)].
     For each argument passed to GuiClient, a custom text field is created with that joint action; e.g.:
         Windows: $ java -jar server.jar -l levels/MAsimple3.lvl -c "java sampleclients.GuiClient [NoOp,Push(E,E)] [Push(E,E),Push(E,N)] [Push(E,E),Pull(W,N)] [Pull(W,E),NoOp]" -g 100
         Linux:   $ java -Dsun.java2d.opengl=true -jar server.jar -l levels/MAsimple3.lvl -c "java sampleclients.GuiClient [NoOp,Push(E,E)] [Push(E,E),Push(E,N)] [Push(E,E),Pull(W,N)] [Pull(W,E),NoOp]" -g 100
