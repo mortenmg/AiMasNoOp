@@ -18,7 +18,7 @@ public class Edge {
         if(to.getType() == CellType.WALL){
             return 5000;
         }else if(to.getType() == CellType.BOX){
-            return 100;
+            return 4;
         }else if(to.getType() == CellType.GOAL){
             return 500;
         }else{ //To.getType() == .EMPTY
