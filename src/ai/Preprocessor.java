@@ -421,7 +421,7 @@ public class Preprocessor {
         if (c > (char) 0) {
             walls[row][col] = c;
             cor[row][col] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
-            corridors.put(new Point(row,col),Character.valueOf(c)-48);
+            corridors.put(new Point(col,row),Character.valueOf(c)-48);
             return false;
         } else {
             walls[row][col] = (char) id;

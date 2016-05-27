@@ -28,6 +28,8 @@ public class Corridor {
         }
     }
 
+    public int getOwner(){ return agent; }
+
     public boolean locked(){
         return locked;
     }
