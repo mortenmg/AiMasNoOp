@@ -48,13 +48,32 @@ public class Level {
                     int newAgentRow = a.getPosition().y + dirToRowChange(c.dir1);
                     int newAgentCol = a.getPosition().x + dirToColChange(c.dir1);
 
-                    if (isCellFree(newAgentCol, newAgentRow)) {
-                        conflictingCell = null;
+                    Point newAgentPos = new Point(newAgentCol,newAgentRow);
 
-                        updateFutureAgent(a, new Point(newAgentCol, newAgentRow));
+                    if (isCellFree(newAgentCol, newAgentRow) && !isCorridor(newAgentPos)) {
+
+                        // Left corridor unlock it
+                        if(isCorridor(a.getPosition())){
+                            unlockCorridor(a.getPosition(),a.getAgentId());
+                        }
+
+                        conflictingCell = null;
+                        updateFutureAgent(a, newAgentPos);
+
+
+                    } else if (isCellFree(newAgentCol,newAgentRow) && isCorridor(newAgentPos)) {
+
+                        if(controlCorridor(newAgentPos, a.getAgentId())){
+                            conflictingCell = null;
+                            updateFutureAgent(a,newAgentPos);
+
+                        }else {
+                            // TODO Plan new road.. :) Agent standing in front of corridor
+                            conflictingCell = newAgentPos;
+                        }
 
                     } else {
-                        conflictingCell = new Point(newAgentCol, newAgentRow);
+                        conflictingCell = newAgentPos;
                     }
                     break;
 
@@ -65,20 +84,37 @@ public class Level {
                     int newAgentRowPull = a.getPosition().y + dirToRowChange(c.dir1);
                     int newAgentColPull = a.getPosition().x + dirToColChange(c.dir1);
 
+                    Point newAgentPosPull = new Point(newAgentColPull,newAgentRowPull);
+                    Point newBoxLocation = new Point(a.getPosition().x, a.getPosition().y);
+
                     Point boxPoint = new Point(boxCol, boxRow);
                     if (boxes.containsKey(boxPoint) && futureBoxes.containsKey(boxPoint)) { // Check if there is box to move
                         Box b1 = boxes.get(boxPoint); //Get box
                         if (b1.color == a.getColor()) { //Check if agent can move
-                            if (isCellFree(newAgentColPull, newAgentRowPull)) { //Is the new position of agent valid
+                            if (isCellFree(newAgentColPull, newAgentRowPull) && !isCorridor(newAgentPosPull)) { //Is the new position of agent valid
+
+                                // Agent is out of the corridor, box is still in corridor
+                                if(isCorridor(newBoxLocation)){
+                                    unlockCorridor(newBoxLocation,a.getAgentId());
+                                }
+
                                 conflictingCell = null;
-
-                                Point newBoxLocation = new Point(a.getPosition().x, a.getPosition().y);
                                 updateFutureBox(b1, newBoxLocation);
+                                updateFutureAgent(a, newAgentPosPull);
 
-                                Point newPos = new Point(newAgentColPull, newAgentRowPull);
-                                updateFutureAgent(a, newPos);
+                            } else if(isCellFree(newAgentColPull,newAgentRowPull) && isCorridor(newAgentPosPull)){
+
+                                if(controlCorridor(newAgentPosPull, a.getAgentId())){
+                                    conflictingCell = null;
+                                    updateFutureBox(b1, newBoxLocation);
+                                    updateFutureAgent(a, newAgentPosPull);
+
+                                }else {
+                                    conflictingCell = newAgentPosPull;
+                                    // TODO Plan new road.. :) Agent standing in front of corridor
+                                }
                             } else { // The new position is occupied
-                                conflictingCell = new Point(newAgentColPull, newAgentRowPull);
+                                conflictingCell = newAgentPosPull;
                             }
                         }
                     }
@@ -88,6 +124,7 @@ public class Level {
                     int boxRowPush = a.getPosition().y + dirToRowChange(c.dir1);
                     int boxColPush = a.getPosition().x + dirToColChange(c.dir1);
 
+
                     Point boxPointPush = new Point(boxColPush, boxRowPush);
                     if (boxes.containsKey(boxPointPush) && futureBoxes.containsKey(boxPointPush)) { //Check if there is box to move
                         Box b2 = boxes.get(boxPointPush); //Get box
@@ -95,16 +132,32 @@ public class Level {
                         int newBoxRow = b2.location.y + dirToRowChange(c.dir2);
                         int newBoxCol = b2.location.x + dirToColChange(c.dir2);
 
+                        Point newBoxLocationPush = new Point(newBoxCol,newBoxRow);
+
                         if (b2.color == a.getColor()) { //Check if agent can move the box
-                            if (isCellFree(newBoxCol, newBoxRow)) {
+                            if (isCellFree(newBoxCol, newBoxRow) && !isCorridor(newBoxLocationPush)) {
+
+                                if(isCorridor(boxPointPush)){
+                                    unlockCorridor(boxPointPush,a.getAgentId());
+                                }
+
                                 conflictingCell = null;
-
                                 updateFutureAgent(a, boxPointPush); //Update agent position to where box were
+                                updateFutureBox(b2, newBoxLocationPush);
 
-                                Point newBoxPos = new Point(newBoxCol, newBoxRow);
-                                updateFutureBox(b2, newBoxPos);
+                            } else if (isCellFree(newBoxCol,newBoxRow) && isCorridor(newBoxLocationPush)) {
+
+                                if(controlCorridor(newBoxLocationPush, a.getAgentId())){
+                                    conflictingCell = null;
+                                    updateFutureAgent(a, boxPointPush); //Update agent position to where box were
+                                    updateFutureBox(b2, newBoxLocationPush);
+                                } else{
+                                    conflictingCell = newBoxLocationPush;
+                                }
+
                             } else { // The new position is occupied
-                                conflictingCell = new Point(newBoxCol, newBoxRow);
+                                conflictingCell = newBoxLocationPush;
+                                // TODO Plan new road.. :) Agent standing in front of corridor
                             }
                         }
                     }
@@ -222,13 +275,39 @@ public class Level {
         }else return false;
     }
 
-    public void lockCorridor(Point pos, int agentId){
-        System.err.println("[Corridor] Value of the corridor: " + corridors.get(pos));
-        corridorLocks[corridors.get(pos)].lock(agentId);
+    /*
+*   Locks the corridor
+*       Check if the corridor is locked
+*           true -> is it this agent who "owns" the lock?
+*               true -> let the agent pass return true!
+*               false -> its locked and not the agent return false
+*           false -> its not locked lock the corridor!
+* */
+    public boolean controlCorridor(Point pos, int agentId) {
+        int corNumber = corridors.get(pos);
+
+        System.err.println("[Corridor] Agent: " + agentId + " Wants to lock corridor #" + corNumber);
+
+        if(isCorridorLocked(pos)){
+            if(corridorLocks[corNumber].getOwner() == agentId){
+                System.err.println("[Corridor] Agent: " + agentId + " Still controls corridor #" + corNumber);
+                return true;
+            }else {
+                System.err.println("[Corridor] Agent: " + agentId + " Control of corridor #" + corNumber +
+                        " denied, controlled by Agent: " + corridorLocks[corNumber].getOwner());
+                return false;
+            }
+        }else {
+            corridorLocks[corNumber].lock(agentId);
+            System.err.println("[Corridor] Agent: " + agentId + " Took control of corridor #" + corNumber);
+            return true;
+        }
+
     }
 
     public void unlockCorridor(Point pos, int agentId){
         corridorLocks[corridors.get(pos)].unlock(agentId);
+        System.err.println("[Corridor] Agent: " + agentId + " Unlocked Corridor #" + corridors.get(pos) + "At Position (X,Y) (" + pos.x + "," + pos.y +")");
     }
 
     /**
