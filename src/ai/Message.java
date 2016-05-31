@@ -11,15 +11,14 @@ enum MessageType{
     Task,
     Terminate,
     Replan,
-    MoveToASafePlace
+    MoveToASafePlace,
+    NeedHelp
 }
 
 public class Message {
 
-    private char receiver;
     private int sender;
     private MessageType type;
-    private GoalTask task;
     private Object payload;
 
     /**
@@ -27,13 +26,11 @@ public class Message {
      * @param type
      */
     Message(MessageType type){
-        this.receiver = Character.MIN_VALUE;
         this.sender = Character.MIN_VALUE;
         this.type = type;
     }
 
     Message(MessageType type, Object payload) {
-        this.receiver = Character.MIN_VALUE;
         this.sender = Character.MIN_VALUE;
         this.type = type;
         this.payload = payload;
@@ -47,23 +44,8 @@ public class Message {
         return this.sender;
     }
 
-    public char getReceiver(){
-        return this.receiver;
-    }
-
-    public GoalTask getTask(){
-        if (task == null){
-            this.task = new GoalTask(0,0,0, "");
-        }
-        return this.task;
-    }
-
     public void setSender(int sender){
         this.sender = sender;
-    }
-
-    public void setReceiver(char receiver){
-        this.receiver = receiver;
     }
 
     public void setPayload(Object payload) {

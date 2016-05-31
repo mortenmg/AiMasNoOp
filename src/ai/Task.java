@@ -9,4 +9,5 @@ public interface Task {
 
     int getGoalId();
     int getBoxId();
+    Point getStartPosition();
 }

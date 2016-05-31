@@ -1,9 +1,9 @@
 package ai;
 
+import junit.framework.Test;
+
 import java.awt.*;
 import java.util.*;
-
-import ai.State;
 
 /**
  * Created by hvingelby on 4/5/16.
@@ -11,8 +11,6 @@ import ai.State;
 public class MAgent extends Agent {
     private final Queue<Message> agentMsgQueue;
     private final Deque<Command> plan;
-
-    private Supervisor s;
 
     private GoalTask currentTask;
     private boolean isWorkingOnPlan;
@@ -36,19 +34,6 @@ public class MAgent extends Agent {
         this.planner = new AStarPlanner(getAgentId());
         this.agentMsgQueue = new LinkedList<>();
         this.plan = new LinkedList<>();
-    }
-
-    private void moveToSafePlace(Set<Point> illegalPoints){
-        MovePlanner movePlanner = new MovePlanner(getAgentId());
-
-        // Create a move task away from the agents own position.
-        MoveTask task = new MoveTask(getPosition(), illegalPoints);
-
-        synchronized (this.plan) {
-            for (Command c : movePlanner.generatePlan(task)) {
-                this.plan.add(c);
-            }
-        }
     }
 
     private void addPlan(LinkedList<ai.State> plan) {
@@ -115,22 +100,29 @@ public class MAgent extends Agent {
                 generateTaskPlan((GoalTask) msg.getPayload());
                 break;
             case Help:
-                //Calc "bid" for help
-                //Return bid
+                System.err.println(this + " I received a helper task!");
+                generateTaskPlan((HelperTask) msg.getPayload());
                 break;
             case Terminate:
                 this.terminateFlag = true;
                 break;
             case Replan:
-                System.err.println(this + " I was asked to empty my action queue.");
                 if (!replanTaskPlan(currentTask)) {
                     System.err.println(this + " I could not replan :-( So I will ask my friends to help me!");
+
+                    Point p = Supervisor.getInstance().getLevel().conflictingCellFromMove(this.peekTopCommand(), this);
+                    Box boxToMove = Supervisor.getInstance().getLevel().getBoxAtPosition(p);
+                    HelperTask task = new HelperTask(getRestOfPlan(), boxToMove.color, boxToMove.id);
+
+                    Message helpMsg = new Message(MessageType.NeedHelp, task);
+                    helpMsg.setSender(getAgentId());
+                    Supervisor.getInstance().postMessageToSupervisor(helpMsg);
                 }
                 break;
             case MoveToASafePlace:
                 System.err.println(this + " I was asked to move to a safe place.");
                 isWorkingOnPlan = true;
-                moveToSafePlace((Set<Point>) msg.getPayload());
+                generateMovePlan((Set<Point>) msg.getPayload());
                 break;
             default:
                 break;
@@ -153,6 +145,22 @@ public class MAgent extends Agent {
         isWorkingOnPlan = false;
     }
 
+    private void generateTaskPlan(HelperTask task) {
+        isWorkingOnPlan = true;
+        System.err.println(this+ " I am planning a helper task");
+
+        HelpPlanner planner = new HelpPlanner();
+
+        synchronized (this.plan) {
+            for (TestState s : planner.generatePlan(task)) {
+                this.plan.add(s.getAction());
+            }
+        }
+
+        isWorkingOnPlan = false;
+
+    }
+
     private boolean replanTaskPlan(GoalTask task) {
         isWorkingOnPlan = true;
 
@@ -168,8 +176,17 @@ public class MAgent extends Agent {
         return false;
     }
 
-    public void addSupervisor(Supervisor supervisor) {
-        s = supervisor;
+    private void generateMovePlan(Set<Point> illegalPoints){
+        MovePlanner movePlanner = new MovePlanner();
+
+        // Create a move task away from the agents own position.
+        MoveTask task = new MoveTask(getPosition(), illegalPoints);
+
+        synchronized (this.plan) {
+            for (TestState s : movePlanner.generatePlan(task)) {
+                this.plan.add(s.getAction());
+            }
+        }
     }
 
     public synchronized void postMsg(Message msg){

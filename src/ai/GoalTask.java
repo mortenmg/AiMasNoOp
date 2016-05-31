@@ -30,12 +30,19 @@ public class GoalTask implements Task, Comparable<GoalTask> {
         return taskId;
     }
 
+    @Override
     public int getGoalId() {
         return this.goalId;
     }
 
+    @Override
     public int getBoxId() {
         return boxId;
+    }
+
+    @Override
+    public Point getStartPosition() {
+        return null;
     }
 
     public int getWeight(){return weight; }

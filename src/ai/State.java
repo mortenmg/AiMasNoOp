@@ -5,9 +5,7 @@ import java.util.*;
 
 public class State {
 
-	private static Random rnd = new Random( 1 ); 
-	public static int MAX_ROW = 70;
-	public static int MAX_COLUMN = 25;
+	private static Random rnd = new Random( 1 );
 
 	public int agentRow;
 	public int agentCol;
@@ -47,7 +45,7 @@ public class State {
 		return g;
 	}
 
-	public boolean isInitialState() {
+	private boolean isInitialState() {
 		return this.parent == null;
 	}
 
@@ -118,14 +116,6 @@ public class State {
 		return  Supervisor.getInstance().getLevel().getMap()[row][col].getType()!=CellType.WALL;
 	}
 
-	/**
-	 * Checks if there is a box in the location given,
-	 * and if the box is the relevant box
-	 * from the task.
-	 * @param row
-	 * @param col
-     * @return
-     */
 	private boolean boxAt( int row, int col ) {
 		Box myBox = boxes.get(task.getBoxId());
 		return myBox.location.equals(new Point(col,row));
@@ -192,13 +182,6 @@ public class State {
 				return false;
 			}
 		}
-		//if ( !Arrays.deepEquals( boxes, other.boxes ) ) {
-		//	return false;
-		//}
-		// if ( !Arrays.deepEquals( goals, other.goals ) )
-		// 	return false;
-		// if ( !Arrays.deepEquals( walls, other.walls ) )
-		// 	return false;
 		return true;
 	}
 

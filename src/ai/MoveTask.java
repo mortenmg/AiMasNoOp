@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Created by hvingelby on 5/17/16.
  */
-public class MoveTask {
+public class MoveTask implements Task{
     private Set<Point> illegalPositions;
     private Point startPosition;
 
@@ -19,7 +19,18 @@ public class MoveTask {
         return illegalPositions.contains(p);
     }
 
+    @Override
     public Point getStartPosition() {
         return startPosition;
+    }
+
+    @Override
+    public int getGoalId() {
+        return 0;
+    }
+
+    @Override
+    public int getBoxId() {
+        return 0;
     }
 }

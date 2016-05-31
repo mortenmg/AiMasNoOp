@@ -70,6 +70,10 @@ public class Supervisor extends Thread {
             assignGoalTask();
 
             level.prepareNextLevel();
+
+            if(!supervisorMsgQueue.isEmpty())
+                handleMessage(supervisorMsgQueue.poll());
+
             ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
 
             if (debugging) {
@@ -82,6 +86,32 @@ public class Supervisor extends Thread {
             }
 
         }
+    }
+
+    private void handleMessage(Message msg) {
+        switch (msg.getType()){
+            case NeedHelp:
+                assignHelperTask((HelperTask) msg.getPayload());
+                break;
+        }
+    }
+
+    private void assignHelperTask(HelperTask task) {
+        MAgent bestAgent = null;
+        int currentBestBid = Integer.MAX_VALUE;
+        for (MAgent a: agents) {
+            if (task.getColor().equals(a.getColor())) {
+                Box boxToMove = level.getBoxWithId(task.getBoxId());
+                int agentBid = SimpleHeuristic.euclidean(boxToMove.location, a.getPosition());
+
+                if (agentBid < currentBestBid) {
+                    currentBestBid = agentBid;
+                    bestAgent = a;
+                }
+            }
+        }
+        task.setAgentId(bestAgent.getAgentId());
+        bestAgent.postMsg(new Message(MessageType.Help, task));
     }
 
     private void singleAgentLoop() { //Make supervisor available until agent is done, but agent handles everything
@@ -137,7 +167,7 @@ public class Supervisor extends Thread {
 
     /**
      * Post a message to supervisor message queue
-     **/
+     */
     public synchronized void postMessageToSupervisor(Message msg){
         supervisorMsgQueue.add(msg);
         notify();
@@ -150,7 +180,7 @@ public class Supervisor extends Thread {
      * action queues. The action is added to the joint
      * actions sent to the server if it is valid.
      *
-     * @return
+     * @return a list of valid actions
      */
     private ArrayList<Command> getValidActions() {
 
@@ -158,7 +188,6 @@ public class Supervisor extends Thread {
         Point p;
 
         for (MAgent a: agents){
-            String valid = "invalid";
             Command c = a.peekTopCommand();
             if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
                 GoalTask g = a.getCurrentTask();
@@ -168,36 +197,43 @@ public class Supervisor extends Thread {
                 System.err.println("[Supervisor] I have received all actions from agent "+a.getAgentId());
             } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
                 cmds.add(a.getAgentId(),a.pollCommand());
-                valid = "valid";
-            } else { // The move is invalid
-                if (!p.equals(new Point(-1,-1))) {
-                    Box b;
-                    MAgent otherAgent;
-                    if ((b = level.getBoxAtPosition(p)) != null){ // There is a box in the way.
-                        a.postMsg(new Message(MessageType.Replan));
-                        cmds.add(a.getAgentId(),null);
-                    } else if ((otherAgent = this.getAgentFromPoint(p)) != null){ // There is an agent in the way
-                        if (otherAgent.commandQueueEmpty() && !otherAgent.isWorkingOnPlan()) { // The other agent is not doing anything
-                            otherAgent.postMsg(new Message(MessageType.MoveToASafePlace, a.getRestOfPlan()));
-                            cmds.add(a.getAgentId(), null);
-                            System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
-                        } else {
-                            cmds.add(a.getAgentId(), null);
-                        }
-                    } else {
-                        cmds.add(a.getAgentId(),null);
-                    }
-                } else { // There is no move
-                    cmds.add(a.getAgentId(),null);
-                }
-                // Why is the command invalid??
+            } else {
+                handleInvalidMove(p, a);
+                cmds.add(a.getAgentId(),null);
             }
-            if (c!=null)
-                System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
         }
         return cmds;
     }
 
+    /**
+     * Method for handling an invalid action from an agent.
+     * This method will ask the agent to either replan,
+     * move or something else.
+     *
+     * @param p is the invalid point.
+     * @param a is the agent that is trying to perfom an action
+     */
+    private void handleInvalidMove(Point p, MAgent a) {
+        if (!p.equals(new Point(-1,-1))) {
+            Box b;
+            MAgent otherAgent;
+            if ((b = level.getBoxAtPosition(p)) != null){ // There is a box in the way.
+                a.postMsg(new Message(MessageType.Replan));
+            } else if ((otherAgent = this.getAgentFromPoint(p)) != null){ // There is an agent in the way
+                if (otherAgent.commandQueueEmpty() && !otherAgent.isWorkingOnPlan()) { // The other agent is not doing anything
+                    otherAgent.postMsg(new Message(MessageType.MoveToASafePlace, a.getRestOfPlan()));
+                    System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
+                }
+            }
+        }
+    }
+
+    /**
+     * Method for sending commands to the server.jar
+     *
+     * @param commands
+     * @return returns if the command was accepted by the server.
+     */
     private boolean sendActions(ArrayList<Command> commands) {
         String jointAction = "[";
 
