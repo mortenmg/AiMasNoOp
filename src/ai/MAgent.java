@@ -3,8 +3,6 @@ package ai;
 import java.awt.*;
 import java.util.*;
 
-import ai.State;
-
 /**
  * Created by hvingelby on 4/5/16.
  */
@@ -23,6 +21,10 @@ public class MAgent extends Agent {
 
     private boolean terminateFlag = false;
     private AStarPlanner planner;
+
+    private boolean waitingForCorridor = false;
+    private int waitingForCorridorNumber;
+    private LinkedList<Command> BackToPlan;
 
     public MAgent(int id, String color, Point position) {
         super(id,color,position);
@@ -46,9 +48,51 @@ public class MAgent extends Agent {
 
         synchronized (this.plan) {
             for (Command c : movePlanner.generatePlan(task)) {
-                this.plan.add(c);
+                this.plan.addFirst(c);
             }
         }
+    }
+
+    private void moveFromCorridor(Set<Point> illegalPoints){
+        MovePlanner movePlanner = new MovePlanner(getAgentId());
+
+        // Create a move task away from the agents own position.
+        MoveTask task = new MoveTask(getPosition(), illegalPoints);
+
+        BackToPlan = new LinkedList<>();
+
+        synchronized (this.plan) {
+            for (Command c : movePlanner.generatePlan(task)) {
+                BackToPlan.add(c.reverseCommand(c));
+                this.plan.addFirst(c);
+            }
+
+        }
+
+    }
+
+
+    public void WaitForCorridor(int corNumber){
+        waitingForCorridor = true;
+        waitingForCorridorNumber = corNumber;
+    }
+
+    public boolean isWaitingForCorridor(){
+        return waitingForCorridor;
+    }
+
+    public void getBackToPlanPosition(){
+        synchronized (this.plan){
+            for(Command c: BackToPlan){
+                this.plan.addFirst(c);
+            }
+        }
+    }
+
+    public void goToCorridor(){
+        waitingForCorridor = false;
+        // Get back to the corridor
+        getBackToPlanPosition();
     }
 
     private void addPlan(LinkedList<ai.State> plan) {
@@ -132,6 +176,10 @@ public class MAgent extends Agent {
                 isWorkingOnPlan = true;
                 moveToSafePlace((Set<Point>) msg.getPayload());
                 break;
+            case MoveFromCorridor:
+                System.err.println(this + "I was asked to move away from corridor");
+                isWorkingOnPlan = true;
+                moveFromCorridor((Set<Point>) msg.getPayload());
             default:
                 break;
 

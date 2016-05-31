@@ -2,6 +2,8 @@ package ai;
 
 import java.util.LinkedList;
 
+import static ai.Command.dir.*;
+
 public class Command {
 	static {
 		LinkedList< Command > cmds = new LinkedList< Command >();
@@ -64,7 +66,47 @@ public class Command {
 
 		return actType.toString() + "(" + dir1 + "," + dir2 + ")";
 	}
-	
+
+	public Command reverseCommand(Command command){
+
+		Command com;
+
+		// Push or Pull
+		if(command.dir1 != null && command.dir2 != null){
+			if(command.actType == type.Pull){
+				com = new Command(type.Push,reverseDirection(dir1), reverseDirection(dir2));
+				return com;
+			}else {
+				com = new Command(type.Pull,reverseDirection(dir1), reverseDirection(dir2));
+				return com;
+			}
+		} else if(dir1 != null && dir2 == null){
+			com = new Command(reverseDirection(dir1));
+			return com;
+		}
+
+		return null;
+	}
+
+	private dir reverseDirection(dir direction){
+
+		switch (direction){
+			case E:
+				direction = W;
+				break;
+			case W:
+				direction = E;
+				break;
+			case N:
+				direction = S;
+				break;
+			case S:
+				direction = N;
+				break;
+
+		}
+		return direction;
+	}
 
 	public String toActionString() {
 		return "[" + this.toString() + "]";
@@ -76,7 +118,7 @@ public class Command {
 	}
 
 	public static int dirToColChange( Command.dir d ) {
-		return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
+		return ( d == E ? 1 : ( d == W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
 	}
 
 

@@ -11,7 +11,8 @@ enum MessageType{
     Task,
     Terminate,
     Replan,
-    MoveToASafePlace
+    MoveToASafePlace,
+    MoveFromCorridor
 }
 
 public class Message {

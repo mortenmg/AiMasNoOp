@@ -1,8 +1,12 @@
 package ai;
 
+import jdk.nashorn.internal.ir.Block;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Mathias on 09-05-2016.
@@ -42,6 +46,8 @@ public class Level {
     public Point conflictingCellFromMove(Command c, MAgent a) {
         Point conflictingCell = new Point(-1, -1);
 
+        Set<Point> BlockingCorridor;
+
         if(c != null) {
             switch (c.actType) {
                 case Move:
@@ -69,6 +75,14 @@ public class Level {
 
                         }else {
                             // TODO Plan new road.. :) Agent standing in front of corridor
+                            BlockingCorridor = new HashSet<>();
+                            BlockingCorridor.add(a.getPosition());
+                            BlockingCorridor.add(newAgentPos);
+                            Message MoveBackFromCorridor = new Message(MessageType.MoveFromCorridor,BlockingCorridor);
+                            a.postMsg(MoveBackFromCorridor);
+                            a.WaitForCorridor(corridors.get(newAgentPos));
+
+
                             conflictingCell = newAgentPos;
                         }
 
@@ -273,6 +287,10 @@ public class Level {
         if(corridors.get(pos) != null){
             return corridorLocks[corridors.get(pos)].locked();
         }else return false;
+    }
+
+    public boolean isCorridorLocked(int cor){
+        return corridorLocks[cor].locked();
     }
 
     /*
