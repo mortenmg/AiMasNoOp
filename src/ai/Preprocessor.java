@@ -189,7 +189,6 @@ public class Preprocessor {
 
         createGraphFromMap();
         findCosts();
-        findCorridors();
         //getGoalTasks();  //Called from supervisor
 
         //printCorridorMap(cor);
@@ -297,7 +296,7 @@ public class Preprocessor {
 
             System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
                     "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
-                    "TaskWeight: " + gt.getWeight() + " TaskCost: " + gt.getCost());
+                    "TaskWeight: " + gt.getWeight() + " TaskCost: " + gt.getCost() + " Priority: " );
         }
 
 //        for (GoalTask gt: goalTasks) {
@@ -331,56 +330,51 @@ public class Preprocessor {
     //Need a datastructure for corridors
     private void findCorridors() {
         char c;
-        int id = 48; //Ascii character '0'
+        int id = 0; //Ascii character '0' is 48
 
 
         for (int row = 1; row < walls.length-1; row++) {
             for (int col = 1; col < walls[0].length-1; col++) {
 
-                //If cell is a wall, skip
+                //If cell is a wall, or already detected as corridor, skip
                 c = walls[row][col];
-                if (c == '+') continue;
+                if (c == '+' || corridors.containsKey(new Point(row,col))) continue;
 
                     //If cell is empty, analyse
                 else if (isCorridor(row, col)) {
-                    if (assignId(row, col, id)) {
-                        id++;
+
+                    //Once a corridor is found, follow it in all directions untill it ends
+                    ArrayDeque<Point> queue = new ArrayDeque<>();
+                    queue.add(new Point(row,col));
+                    while(!queue.isEmpty()){
+                        Point p = queue.poll();
+                        if(!corridors.containsKey(new Point(p.x-1,p.y)) && isCorridor(p.x-1,p.y)) queue.add(new Point(p.x-1,p.y));
+                        if(!corridors.containsKey(new Point(p.x+1,p.y)) && isCorridor(p.x+1,p.y)) queue.add(new Point(p.x+1,p.y));
+                        if(!corridors.containsKey(new Point(p.x,p.y-1)) && isCorridor(p.x,p.y-1)) queue.add(new Point(p.x,p.y-1));
+                        if(!corridors.containsKey(new Point(p.x,p.y+1)) && isCorridor(p.x,p.y+1)) queue.add(new Point(p.x,p.y+1));
+
+                        assignId(p.x,p.y,id);
                     }
+                    id++;
                 }
 //                isCorridorSum(i,j);
             }
         }
 
-        corridorLocks = new Corridor[id-48];
+        corridorLocks = new Corridor[id];
 //        corridorLocks = new Boolean[id-48];
-        for (int i = 0; i < id-48; i++) {
+        for (int i = 0; i < id; i++) {
             corridorLocks[i] = new Corridor();
         }
         printCorridorMap();
     }
 
-    private boolean isCorridorSum(int x, int y) {
-        // Iterate 3x3 kernal
-        int value = 1;
-        int score = 0;
-        String s = "";
-        System.err.println("Kernal " + x + "," + y);
-        for (int i = x - 1; i <= x + 1; i++) {
-            for (int j = y - 1; j <= y + 1; j++) {
-                if (walls[i][j] == '+')
-                    score += value;
-                value++;
-                s = s + walls[i][j];
-            }
-            System.err.println(s);
-            s = "";
-        }
-        walls[x][y] = (char) score;
-        return false;
-    }
-
     private boolean isCorridor(Point p){ return isCorridor(p.y,p.x);}
     private boolean isCorridor(int row, int col) {
+
+        //Check if out of bounds, and skip if accidentally given a wall
+        if ((row == 0 || col == 0) || (row >= mapHeight-1 || col >= mapWidth-1)) return false;
+        if (walls[row][col] == '+') return false;
 
         //Vertical corridor
         if ((walls[row - 1][col] != '+' || walls[row + 1][col] != '+') && walls[row][col - 1] == '+' && walls[row][col + 1] == '+') {
@@ -407,27 +401,31 @@ public class Preprocessor {
         return false;
     }
 
-    private boolean assignId(int row, int col, int id) {
-        char c = (char) 0;
-        if (walls[row - 1][col] > '+') {
-            c = walls[row - 1][col];
-        } else if (walls[row + 1][col] > '+') {
-            c = walls[row + 1][col];
-        } else if (walls[row][col - 1] > '+') {
-            c = walls[row][col - 1];
-        } else if (walls[row][col + 1] > '+') {
-            c = walls[row][col + 1];
-        }
-        if (c > (char) 0) {
-            walls[row][col] = c;
-            cor[row][col] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
-            corridors.put(new Point(col,row),Character.valueOf(c)-48);
-            return false;
-        } else {
-            walls[row][col] = (char) id;
-            cor[row][col] = id-47; // 48 i stedet? for 0-indeksering? :)
-            return true;
-        }
+    private void assignId(int row, int col, int id) {
+        walls[row][col] = (char) (id+48);
+        cor[row][col] = id;
+        corridors.put(new Point(row,col),id);
+
+//        char c = (char) 0;
+//        if (walls[row - 1][col] > '+') {
+//            c = walls[row - 1][col];
+//        } else if (walls[row + 1][col] > '+') {
+//            c = walls[row + 1][col];
+//        } else if (walls[row][col - 1] > '+') {
+//            c = walls[row][col - 1];
+//        } else if (walls[row][col + 1] > '+') {
+//            c = walls[row][col + 1];
+//        }
+//        if (c > (char) 0) {
+//            walls[row][col] = c;
+//            cor[row][col] = Character.valueOf(c)-47; //-47 is a correction from ascii to integer
+//            corridors.put(new Point(row,col),Character.valueOf(c)-48);
+//            return false;
+//        } else {
+//            walls[row][col] = (char) id;
+//            cor[row][col] = id-47; // 48 i stedet? for 0-indeksering? :)
+//            return true;
+//        }
     }
 
     // Their value aee initially set to false
