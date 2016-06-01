@@ -88,7 +88,6 @@ public class Level {
                         }
 
                     } else {
-                        // Test?
                         conflictingCell = null;
                     }
                     break;
