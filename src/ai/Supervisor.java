@@ -160,6 +160,25 @@ public class Supervisor extends Thread {
         for (MAgent a: agents){
             String valid = "invalid";
             Command c = a.peekTopCommand();
+            if(a.isWaitingForCorridor()){
+                // Agent is waiting for corridor..
+                System.err.println("[Supervisor] i am wating for the corridor!!");
+
+                if(a.moveFromCorridor()){
+                    cmds.add(a.getAgentId(),a.pollCommand());
+                    a.movedFromCorridor();
+                }else {
+                    // Test if corridor is open!
+                    if(a.hasCorridorOpened()){
+                        a.getBackToPlanPosition();
+                        cmds.add(a.getAgentId(),a.pollCommand());
+                    }else {
+                        cmds.add(a.getAgentId(),null);
+                    }
+                }
+
+
+            }else {
             if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
                 GoalTask g = a.getCurrentTask();
                 this.goalTasks.remove(g);
@@ -194,6 +213,7 @@ public class Supervisor extends Thread {
             }
             if (c!=null)
                 System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
+        }
         }
         return cmds;
     }

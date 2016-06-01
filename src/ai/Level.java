@@ -82,12 +82,14 @@ public class Level {
                             a.postMsg(MoveBackFromCorridor);
                             a.WaitForCorridor(corridors.get(newAgentPos));
 
+                            a.moveAwayFromCorridor();
 
                             conflictingCell = newAgentPos;
                         }
 
                     } else {
-                        conflictingCell = newAgentPos;
+                        // Test?
+                        conflictingCell = null;
                     }
                     break;
 
