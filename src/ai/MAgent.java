@@ -27,6 +27,9 @@ public class MAgent extends Agent {
     private boolean waitingForCorridor = false;
     private int waitingForCorridorNumber;
     private LinkedList<Command> BackToPlan;
+    private boolean moveAway = false;
+    private int waitSteps;
+    private Point lastPosition;
 
     public MAgent(int id, String color, Point position) {
         super(id,color,position);
@@ -63,15 +66,71 @@ public class MAgent extends Agent {
 
     }
 
+    public boolean hasCorridorOpened(){
+        if(!Supervisor.getInstance().getLevel().isCorridorLocked(waitingForCorridorNumber)){
+            waitingForCorridor = false;
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
+    public void setLastPosition(Point position){
+        lastPosition = position;
+    }
+
+    public Point getLastPosition(){
+        return lastPosition;
+    }
+
+    public int getWaitNumberOfSteps(){
+        return waitSteps;
+    }
+
+    public void setWaitSteps(int waitnumber){
+        this.waitSteps = waitnumber;
+    }
+
+    public void madeWaitStep(){
+        waitSteps--;
+    }
+
 
     public void WaitForCorridor(int corNumber){
         waitingForCorridor = true;
         waitingForCorridorNumber = corNumber;
     }
 
-    public boolean isWaitingForCorridor(){
+    public synchronized boolean isWaitingForCorridor(){
         return waitingForCorridor;
+
+        /*
+            if(s.getLevel().isCorridorLocked(waitingForCorridorNumber)){
+            System.err.println("[MAgent] Corridor is locked! ---");
+            return waitingForCorridor;
+        }else{
+            System.err.println("[MAgent] Corridor is open! ---");
+            //goToCorridor();
+            waitingForCorridor = false;
+            return waitingForCorridor;
+        }
+        * */
     }
+
+    public void moveAwayFromCorridor(){
+        moveAway = true;
+    }
+
+    public void movedFromCorridor(){
+        moveAway = false;
+    }
+
+    public boolean moveFromCorridor(){
+        return moveAway;
+    }
+
+
 
     public void getBackToPlanPosition(){
         synchronized (this.plan){
