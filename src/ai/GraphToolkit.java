@@ -44,9 +44,20 @@ public class GraphToolkit {
     private static void updateNodePaths(ArrayList<Node> graph, int goalId){
 
         for(Node n: graph) {
-
             if (n.getType() != CellType.WALL) { //Only save paths from !Wall nodes
                 n.addGoalPath(n.getCost(), goalId);
+            }
+            if (goalId == 99) {
+                if (n.getType() == CellType.GOAL) {
+                    Node prev = n.getPrevious();
+                    while (prev.getPrevious() != null) {
+                        if (prev.getType() == CellType.GOAL) {
+                            n.setPreviousGoal(prev.getId());
+                            break;
+                        }
+                        prev = prev.getPrevious();
+                    }
+                }
             }
         }
     }

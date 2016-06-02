@@ -48,6 +48,17 @@ public class Supervisor extends Thread {
         Supervisor.getInstance().start();
     }
 
+    public boolean isGoalFulfilledForBox(Point boxPos, int boxId){
+        for(GoalTask gt: getGoalTasks()){
+            if(gt.getBoxId() == boxId){
+                Goal g = level.getGoalWithId(gt.getGoalId());
+                if(g.point.equals(boxPos))
+                    return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Supervisor main loop
@@ -319,10 +330,10 @@ public class Supervisor extends Thread {
     }
 
     public void setAgents(List<Agent> agents) {
-        if (agents.size() == 1) {
+        if(agents.size() == 1){
             singleAgent = new SAgent(agents.get(0));
-        } else {
-            for (Agent a : agents) {
+        }else{
+            for(Agent a: agents){
                 this.agents.add(new MAgent(a));
             }
         }

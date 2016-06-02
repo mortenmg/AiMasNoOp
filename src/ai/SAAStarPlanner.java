@@ -1,10 +1,7 @@
 package ai;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Created by Mathias on 24-05-2016.
@@ -13,6 +10,7 @@ public class SAAStarPlanner {
 
     private PriorityQueue<SAState> frontier;
     public HashSet< SAState > explored;
+    private ArrayList<GoalTask> goalTasks;
     public long startTime = System.currentTimeMillis();
     public float timeSpent() {
         return ( System.currentTimeMillis() - startTime ) / 1000f;
@@ -20,7 +18,7 @@ public class SAAStarPlanner {
 
     public SAAStarPlanner() {
         explored = new HashSet<>();
-        frontier = new PriorityQueue<>(new SAHeuristic());
+        goalTasks = new ArrayList<>();
     }
 
     public SAState getAndRemoveLeaf() {
@@ -49,27 +47,17 @@ public class SAAStarPlanner {
         return explored.size();
     }
 
+    private static int totalExploredCount = 0;
+    private static float totalTimeSpent = 0;
+
     public String searchStatus() {
         return String.format( "#Explored: %4d, #Frontier: %3d, Time: %3.2f s \t%s", countExplored(), countFrontier(), timeSpent(), Memory.stringRep() );
     }
 
-    public LinkedList<SAState> generatePlan() {
-        SAState initialState = new SAState(null);
-        Cell[][] map = Supervisor.getInstance().getLevel().getMap();
-        initialState.boxes = new char[SAState.MAX_ROW][SAState.MAX_COLUMN];
+    public LinkedList<SAState> generatePlan(SAState initialState) {
 
-        HashMap<Integer,Box> boxes = Supervisor.getInstance().getLevel().getBoxes();
-        HashMap<Integer,Point> boxesPos = new HashMap<>();
-        for(Box b: boxes.values()){
-            initialState.boxes[b.location.y][b.location.x] = b.letter;
-            boxesPos.put(b.id,new Point(b.location));
-        }
-
-        initialState.setHeuristicBoxes(boxesPos);
-        Point agentPos = Supervisor.getInstance().getSingleAgent().getPosition();
-        initialState.agentCol = agentPos.x;
-        initialState.agentRow = agentPos.y;
-
+        this.goalTasks = SAState.goalTasks;
+        frontier = new PriorityQueue<>(new SAHeuristic(goalTasks));
 
         addToFrontier( initialState );
 
@@ -80,11 +68,13 @@ public class SAAStarPlanner {
             }
             if ( Memory.shouldEnd() ) {
                 System.err.format( "Memory limit almost reached, terminating search %s\n", Memory.stringRep() );
+                System.err.println( searchStatus() );
                 return null;
             }
 
             if ( timeSpent() > 300) { // Minutes timeout
                 System.err.format( "Time limit reached, terminating search %s\n", Memory.stringRep() );
+                System.err.println( searchStatus() );
                 return null;
             }
 
@@ -96,7 +86,14 @@ public class SAAStarPlanner {
 
             if ( leafNode.isGoalState() ) {
                 System.err.println( searchStatus() );
+                totalExploredCount += countExplored();
+                totalTimeSpent += timeSpent();
+
+                System.err.println( totalExploredCount );
+                System.err.println( totalTimeSpent );
                 return leafNode.extractPlan();
+
+
             }
 
             addToExplored( leafNode );

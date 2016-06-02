@@ -381,12 +381,21 @@ public class Level {
 
     public int getCostForCoordinateWithGoal(int x, int y, int goalId){
         if(graph.size() > y){
-            if(graph.get(y).size() > y){
+            if(graph.get(y).size() > x) {
                 Node n = graph.get(y).get(x);
                 return n.getGoalPathsCost(goalId);
             }
         }
         return Integer.MAX_VALUE;
+    }
+
+    public int getPrevGoalAt(int x, int y) {
+        if (graph.size() > y) {
+            if (graph.get(y).size() > x) {
+                return graph.get(y).get(x).getPreviousGoal();
+            }
+        }
+        return -1;
     }
 
     public Cell[][] getMap() {

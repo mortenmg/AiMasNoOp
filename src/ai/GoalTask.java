@@ -13,6 +13,7 @@ public class GoalTask implements Task, Comparable<GoalTask> {
     private int cost;
     private String color;
     private int agentId;
+    private int previousGoal;
 
     GoalTask(int boxId, int goalId, int taskId, String color){
         this.boxId = boxId;
@@ -20,6 +21,7 @@ public class GoalTask implements Task, Comparable<GoalTask> {
         this.taskId = taskId;
         this.color = color;
         this.agentId = -1;
+        this.previousGoal = -1;
     }
 
     public String getColor() {
@@ -48,6 +50,14 @@ public class GoalTask implements Task, Comparable<GoalTask> {
     public int getWeight(){return weight; }
 
     public int getCost() {return cost;  }
+
+    public int getPreviousGoal() {
+        return previousGoal;
+    }
+
+    public void setPreviousGoal(int previousGoal) {
+        this.previousGoal = previousGoal;
+    }
 
     @Override
     //Prioritizes

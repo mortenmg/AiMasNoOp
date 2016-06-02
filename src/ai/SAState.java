@@ -26,6 +26,17 @@ public class SAState {
     private HashMap<Integer,Point> heuristicBoxes_Int = new HashMap<>();
     private HashMap<Point,Integer> heuristicBoxes_Point = new HashMap<>();
 
+    public static boolean[][] walls;// = new boolean[MAX_ROW][MAX_COLUMN];
+    public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];
+    public static char[][] goals;// = new char[MAX_ROW][MAX_COLUMN];
+
+    public SAState parent;
+    public Command action;
+
+    private int g;
+
+    public static ArrayList<GoalTask> goalTasks;
+
     public void setHeuristicBoxes(HashMap<Integer, Point> hBoxes) {
         //this.heuristicBoxes_Int = hBoxes;
         this.heuristicBoxes_Point = new HashMap<>();
@@ -35,6 +46,8 @@ public class SAState {
             this.heuristicBoxes_Int.put(key,hBoxes.get(key));
         }
     }
+
+
 
     private void updateBoxesAt(int row, int col, int newRow, int newCol){
         int id = this.heuristicBoxes_Point.get(new Point(col,row));
@@ -47,17 +60,19 @@ public class SAState {
     public Point getBoxWithIdPos(int id){
         return heuristicBoxes_Int.get(id);
     }
+    public int getBoxIdFromPos(Point position){
+        if(heuristicBoxes_Point.containsKey(position))
+            return heuristicBoxes_Point.get(position);
 
-    public static boolean[][] walls;// = new boolean[MAX_ROW][MAX_COLUMN];
-    public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];
-    public static char[][] goals;// = new char[MAX_ROW][MAX_COLUMN];
+        return -1;
 
-    public SAState parent;
-    public Command action;
+    }
 
-    private int g;
+    public HashMap<Integer, Point> getHeuristicBoxes() {
+        return heuristicBoxes_Int;
+    }
 
-    public SAState( SAState parent ) {
+    public SAState(SAState parent ) {
         this.parent = parent;
         if ( parent == null ) {
             g = 0;
@@ -75,6 +90,16 @@ public class SAState {
     }
 
     public boolean isGoalState() {
+
+        for(GoalTask goalTask: this.goalTasks){
+            Goal g = Supervisor.getInstance().getLevel().getGoalWithId(goalTask.getGoalId());
+            Point boxPos = heuristicBoxes_Int.get(goalTask.getBoxId());
+            if(!g.point.equals(boxPos)){
+                return false;
+            }
+        }
+        return true;
+        /*
         for ( int row = 0; row < MAX_ROW; row++ ) {
             for ( int col = 0; col < MAX_COLUMN; col++ ) {
                 char g = goals[row][col];
@@ -85,6 +110,7 @@ public class SAState {
             }
         }
         return true;
+        */
     }
 
     public ArrayList< SAState > getExpandedNodes() {
@@ -117,7 +143,9 @@ public class SAState {
                         n.agentCol = newAgentCol;
                         n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
                         n.boxes[newAgentRow][newAgentCol] = 0;
-                        n.updateBoxesAt(newAgentRow,newAgentCol,newBoxRow,newBoxCol);
+                        if(heuristicBoxes_Point.containsKey(new Point(newAgentCol,newAgentRow))){
+                            n.updateBoxesAt(newAgentRow,newAgentCol,newBoxRow,newBoxCol);
+                        }
                         //System.err.println("Expanded with push");
                         expandedNodes.add( n );
                     }
@@ -135,7 +163,10 @@ public class SAState {
                         n.agentCol = newAgentCol;
                         n.boxes[this.agentRow][this.agentCol] = this.boxes[boxRow][boxCol];
                         n.boxes[boxRow][boxCol] = 0;
-                        n.updateBoxesAt(boxRow,boxCol,agentRow,agentCol);
+                        if(heuristicBoxes_Point.containsKey(new Point(boxCol,boxRow))){
+                            n.updateBoxesAt(boxRow,boxCol,agentRow,agentCol);
+                        }
+
                         //System.err.println("Expanded with pull");
                         expandedNodes.add( n );
                     }
@@ -159,13 +190,11 @@ public class SAState {
         return this.boxes[row][col] > 0;
     }
 
-
-
-    private int dirToRowChange(Command.dir d ) {
+    public int dirToRowChange(Command.dir d ) {
         return ( d == Command.dir.S ? 1 : ( d == Command.dir.N ? -1 : 0 ) ); // South is down one row (1), north is up one row (-1)
     }
 
-    private int dirToColChange( Command.dir d ) {
+    public int dirToColChange( Command.dir d ) {
         return ( d == Command.dir.E ? 1 : ( d == Command.dir.W ? -1 : 0 ) ); // East is left one column (1), west is right one column (-1)
     }
 

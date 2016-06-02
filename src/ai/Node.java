@@ -17,6 +17,7 @@ public class Node {
     private LinkedList<Edge> neighboors;
     private int cost;
     private HashMap<Integer,Integer> goalPathCosts;
+    private int previousGoal;
 
     private Node previous;
 
@@ -26,6 +27,19 @@ public class Node {
         this.neighboors = new LinkedList<>();
         this.previous = null;
         goalPathCosts = new HashMap<>();
+        previousGoal = -1;
+    }
+
+    public void setType(CellType type) {
+        this.type = type;
+    }
+
+    public int getPreviousGoal() {
+        return previousGoal;
+    }
+
+    public void setPreviousGoal(int previousGoal) {
+        this.previousGoal = previousGoal;
     }
 
     public void setId(int id) {
@@ -58,6 +72,10 @@ public class Node {
 
     public void setPrevious(Node n){
         this.previous = n;
+    }
+
+    public Node getPrevious() {
+        return previous;
     }
 
     public int getGoalPathsCost(int goalId){

@@ -70,5 +70,6 @@ enum CellType {
     EMPTY,
     WALL,
     GOAL,
-    BOX
+    BOX,
+    AGENT
 }
