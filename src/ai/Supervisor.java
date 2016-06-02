@@ -16,7 +16,7 @@ public class Supervisor extends Thread {
 
     private SAgent singleAgent;
     private PriorityQueue<GoalTask> goalTasks = new PriorityQueue<>();
-    private BufferedReader serverMessages = new BufferedReader( new InputStreamReader( System.in ) );
+    private BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
 
     private boolean debugging = false;
 
@@ -24,7 +24,7 @@ public class Supervisor extends Thread {
 
     private Level level;
 
-    public static void main( String[] args ) {
+    public static void main(String[] args) {
 
         Preprocessor p = new Preprocessor(Supervisor.getInstance().getServerMessages());
 
@@ -63,10 +63,10 @@ public class Supervisor extends Thread {
     @Override
     public void run() {
 
-        if(agents.size() == 0){
+        if (agents.size() == 0) {
             this.singleAgent.start();
             singleAgentLoop();
-        }else {
+        } else {
             for (MAgent agent : agents) {
                 agent.addSupervisor(this);
                 agent.start();
@@ -77,7 +77,7 @@ public class Supervisor extends Thread {
     }
 
     private void multiAgentLoop() {
-        while(goalTasks.size() > 0){
+        while (goalTasks.size() > 0) {
             assignGoalTask();
 
             level.prepareNextLevel();
@@ -87,7 +87,7 @@ public class Supervisor extends Thread {
                 System.out.println(validCommands);
                 level.updateToFuture();
             } else {
-                if( sendActions(validCommands) ) {
+                if (sendActions(validCommands)) {
                     level.updateToFuture();
                 }
             }
@@ -96,7 +96,8 @@ public class Supervisor extends Thread {
     }
 
     private void singleAgentLoop() { //Make supervisor available until agent is done, but agent handles everything
-        while(true){}
+        while (true) {
+        }
     }
 
 
@@ -109,7 +110,7 @@ public class Supervisor extends Thread {
 
             MAgent bestAgent = null;
             int currentBestBid = Integer.MAX_VALUE;
-            for (MAgent a: agents) {
+            for (MAgent a : agents) {
 
                 if (a.commandQueueEmpty() && a.getCurrentTask() == null) {
                     Box gtBox = level.getBoxWithId(gt.getBoxId());
@@ -125,20 +126,18 @@ public class Supervisor extends Thread {
             if (bestAgent != null) {
                 System.err.println("[Supervisor] Assigned task #" + gt.getGoalId() + " to agent " + bestAgent.getAgentId());
                 gt.setAgentId(bestAgent.getAgentId());
-                bestAgent.setCurrentTask(gt);
-                bestAgent.postMsg(new Message(MessageType.Task));
+                bestAgent.postMsg(new Message(MessageType.Task, gt));
             }
         }
     }
-
 
 
     public SAgent getSingleAgent() {
         return singleAgent;
     }
 
-    private MAgent getAgentFromPoint(Point p){
-        for(MAgent a: agents){
+    private MAgent getAgentFromPoint(Point p) {
+        for (MAgent a : agents) {
             if (a.getPosition().equals(p))
                 return a;
         }
@@ -146,15 +145,13 @@ public class Supervisor extends Thread {
     }
 
 
-
     /**
      * Post a message to supervisor message queue
      **/
-    public synchronized void postMessageToSupervisor(Message msg){
+    public synchronized void postMessageToSupervisor(Message msg) {
         supervisorMsgQueue.add(msg);
         notify();
     }
-
 
 
     /**
@@ -169,42 +166,65 @@ public class Supervisor extends Thread {
         ArrayList<Command> cmds = new ArrayList<>();
         Point p;
 
-        for (MAgent a: agents){
+        for (MAgent a : agents) {
             String valid = "invalid";
             Command c = a.peekTopCommand();
-            if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
-                GoalTask g = a.getCurrentTask();
-                this.goalTasks.remove(g);
-                a.setCurrentTask(null);
-                cmds.add(a.getAgentId(),null);
-                System.err.println("[Supervisor] I have received all actions from agent "+a.getAgentId());
-            } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
-                cmds.add(a.getAgentId(),a.pollCommand());
-                valid = "valid";
-            } else { // The move is invalid
-                if (!p.equals(new Point(-1,-1))) {
-                    Box b;
-                    MAgent otherAgent;
-                    if ((b = level.getBoxAtPosition(p)) != null){ // There is a box in the way.
-                        a.postMsg(new Message(MessageType.Replan));
-                        cmds.add(a.getAgentId(),null);
-                    } else if ((otherAgent = this.getAgentFromPoint(p)) != null){ // There is an agent in the way
-                        if (otherAgent.commandQueueEmpty() && !otherAgent.isWorkingOnPlan()) { // The other agent is not doing anything
-                            otherAgent.postMsg(new Message(MessageType.MoveToASafePlace, a.getRestOfPlan()));
+            if (a.isWaitingForCorridor()) {
+                // Agent is waiting for corridor..
+                System.err.println("[Supervisor] Agent: " + a.getAgentId() + " i am waiting for the corridor!!");
+
+                if (a.moveFromCorridor()) {
+                    cmds.add(a.getAgentId(), a.pollCommand());
+                    a.movedFromCorridor();
+                } else {
+                    // Test if corridor is open!
+                    if (a.hasCorridorOpened()) {
+                        System.err.println("[Supervisor] The Corridor has opened! Agent " + a.getAgentId() + " Will try to access" );
+                        a.getBackToPlanPosition();
+                        cmds.add(a.getAgentId(), a.pollCommand());
+                    } else {
+                        cmds.add(a.getAgentId(), null);
+                    }
+                }
+
+            } else {
+
+                if (c == null && a.getCurrentTask() != null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
+                    GoalTask g = a.getCurrentTask();
+                    this.goalTasks.remove(g);
+                    a.setCurrentTask(null);
+                    cmds.add(a.getAgentId(), null);
+                    System.err.println("[Supervisor] I have received all actions from agent " + a.getAgentId());
+                } else if ((p = level.conflictingCellFromMove(c, a)) == null) { // The move is valid
+                    cmds.add(a.getAgentId(), a.pollCommand());
+                    valid = "valid";
+                } else { // The move is invalid
+                    if (!p.equals(new Point(-1, -1))) {
+                        Box b;
+                        MAgent otherAgent;
+                        if ((b = level.getBoxAtPosition(p)) != null) { // There is a box in the way.
+                            a.postMsg(new Message(MessageType.Replan));
                             cmds.add(a.getAgentId(), null);
-                            System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
+                        } else if ((otherAgent = this.getAgentFromPoint(p)) != null) { // There is an agent in the way
+                            if (otherAgent.commandQueueEmpty() && !otherAgent.isWorkingOnPlan()) { // The other agent is not doing anything
+                                otherAgent.postMsg(new Message(MessageType.MoveToASafePlace, a.getRestOfPlan()));
+                                cmds.add(a.getAgentId(), null);
+                                System.err.println("[Supervisor] The agent " + otherAgent.getAgentId() + " was kindly asked to move to another place");
+                            } else {
+                                cmds.add(a.getAgentId(), null);
+                            }
                         } else {
                             cmds.add(a.getAgentId(), null);
                         }
-                    } else {
-                        cmds.add(a.getAgentId(),null);
+                    } else { // There is no move
+                        cmds.add(a.getAgentId(), null);
                     }
-                } else { // There is no move
-                    cmds.add(a.getAgentId(),null);
+                    // Why is the command invalid??
                 }
-                // Why is the command invalid??
+                if (c != null)
+                    System.err.println("[Supervisor] Command " + c + " from agent #" + a.getAgentId() + " is " + valid);
             }
-            System.err.println("[Supervisor] Command "+c+" from agent #"+a.getAgentId()+" is "+valid);
+
         }
         return cmds;
     }
@@ -212,19 +232,19 @@ public class Supervisor extends Thread {
     private boolean sendActions(ArrayList<Command> commands) {
         String jointAction = "[";
 
-        for(Command cmd: commands){
-            if(cmd != null)
+        for (Command cmd : commands) {
+            if (cmd != null)
                 jointAction += cmd.toString() + ",";
             else
                 jointAction += "NoOp" + ",";
         }
 
-        jointAction = jointAction.substring(0,jointAction.length()-1);
-        jointAction +=  "]";
+        jointAction = jointAction.substring(0, jointAction.length() - 1);
+        jointAction += "]";
 
         // Place message in buffer
-        System.err.println("[Supervisor] Sending to server: "+jointAction );
-        System.out.println( jointAction );
+        System.err.println("[Supervisor] Sending to server: " + jointAction);
+        System.out.println(jointAction);
 
         // Flush buffer
         System.out.flush();
@@ -236,7 +256,7 @@ public class Supervisor extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if ( percepts == null )
+        if (percepts == null)
             return false;
 
         return true;
@@ -263,19 +283,12 @@ public class Supervisor extends Thread {
 
     public void setAgents(List<Agent> agents) {
         if(agents.size() == 1){
-
-            singleAgent = new SAgent(agents.get(0),true); //TODO: Make this variable of size of map or some other parameters
+            singleAgent = new SAgent(agents.get(0));
         }else{
             for(Agent a: agents){
                 this.agents.add(new MAgent(a));
             }
         }
-    }
-
-    private boolean chooseSingleAgentType() {
-        if(level.getMap().length > 30 && level.getMap()[0].length > 30)
-            return true;
-        return true;
     }
 
     public void setGoalTasks(PriorityQueue<GoalTask> goalTasks) {
@@ -290,7 +303,9 @@ public class Supervisor extends Thread {
         this.debugging = debugging;
     }
 
-    public Level getLevel() { return level; }
+    public Level getLevel() {
+        return level;
+    }
 
     public BufferedReader getServerMessages() {
         return serverMessages;

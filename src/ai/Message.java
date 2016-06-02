@@ -7,30 +7,20 @@ import java.util.Objects;
  */
 
 enum MessageType{
-    NewTaskRequest,
-    Bid,
     Help,
-    Winner,
-    Loser,
     Task,
-    TaskForBid,
     Terminate,
     Replan,
-    MoveToASafePlace
+    MoveToASafePlace,
+    MoveFromCorridor
 }
 
-public class Message implements Comparable<Message> {
-
-    @Override//Only works for Messages of Bid type! so sort for these before comparing!
-    public int compareTo(Message o) {
-        return Integer.compare(this.getBid(),o.getBid());
-    }
+public class Message {
 
     private char receiver;
     private int sender;
     private MessageType type;
     private GoalTask task;
-    private int possibleBid;
     private Object payload;
 
     /**
@@ -48,37 +38,6 @@ public class Message implements Comparable<Message> {
         this.sender = Character.MIN_VALUE;
         this.type = type;
         this.payload = payload;
-    }
-
-    /**
-     * Constructor for bid message
-     * @param bid bid size
-     * @param sender Sender of message
-     * @param task ai.Task for bid
-     */
-    Message(int bid, int sender, GoalTask task){
-        this.receiver = 'S'; //S for supervisor
-        this.possibleBid = bid;
-        this.sender = sender;
-        this.task = task;
-        this.type = MessageType.Bid;
-    }
-
-    /**
-     * Simple constructor only containing task and type
-     * @param task
-     * @param type
-     */
-    Message(GoalTask task, MessageType type){
-        this.task = task;
-        this.type = type;
-    }
-
-    Message(char receiver, int sender, GoalTask task, MessageType type){
-        this.receiver = receiver;
-        this.sender = sender;
-        this.task = task;
-        this.type = type;
     }
 
     public MessageType getType(){
@@ -106,10 +65,6 @@ public class Message implements Comparable<Message> {
 
     public void setReceiver(char receiver){
         this.receiver = receiver;
-    }
-
-    public int getBid(){
-        return possibleBid;
     }
 
     public void setPayload(Object payload) {

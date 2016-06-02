@@ -3,8 +3,6 @@ package ai;
 import java.awt.*;
 import java.util.*;
 
-import ai.State;
-
 /**
  * Created by hvingelby on 4/5/16.
  */
@@ -22,7 +20,14 @@ public class MAgent extends Agent {
     }
 
     private boolean terminateFlag = false;
-    private Planner planner;
+    private AStarPlanner planner;
+
+    private boolean waitingForCorridor = false;
+    private int waitingForCorridorNumber;
+    private LinkedList<Command> BackToPlan;
+    private boolean moveAway = false;
+    private int waitSteps;
+    private Point lastPosition;
 
     public MAgent(int id, String color, Point position) {
         super(id,color,position);
@@ -46,9 +51,107 @@ public class MAgent extends Agent {
 
         synchronized (this.plan) {
             for (Command c : movePlanner.generatePlan(task)) {
-                this.plan.add(c);
+                this.plan.addFirst(c);
             }
         }
+    }
+
+    private void moveFromCorridor(Set<Point> illegalPoints){
+        MovePlanner movePlanner = new MovePlanner(getAgentId());
+
+        // Create a move task away from the agents own position.
+        MoveTask task = new MoveTask(getPosition(), illegalPoints);
+
+        BackToPlan = new LinkedList<>();
+
+        synchronized (this.plan) {
+            for (Command c : movePlanner.generatePlan(task)) {
+                BackToPlan.add(c.reverseCommand(c));
+                this.plan.addFirst(c);
+            }
+
+        }
+
+    }
+
+    public boolean hasCorridorOpened(){
+        if(!s.getLevel().isCorridorLocked(waitingForCorridorNumber)){
+            waitingForCorridor = false;
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
+    public void setLastPosition(Point position){
+        lastPosition = position;
+    }
+
+    public Point getLastPosition(){
+        return lastPosition;
+    }
+
+    public int getWaitNumberOfSteps(){
+        return waitSteps;
+    }
+
+    public void setWaitSteps(int waitnumber){
+        this.waitSteps = waitnumber;
+    }
+
+    public void madeWaitStep(){
+        waitSteps--;
+    }
+
+
+    public void WaitForCorridor(int corNumber){
+        waitingForCorridor = true;
+        waitingForCorridorNumber = corNumber;
+    }
+
+    public synchronized boolean isWaitingForCorridor(){
+        return waitingForCorridor;
+
+        /*
+            if(s.getLevel().isCorridorLocked(waitingForCorridorNumber)){
+            System.err.println("[MAgent] Corridor is locked! ---");
+            return waitingForCorridor;
+        }else{
+            System.err.println("[MAgent] Corridor is open! ---");
+            //goToCorridor();
+            waitingForCorridor = false;
+            return waitingForCorridor;
+        }
+        * */
+    }
+
+    public void moveAwayFromCorridor(){
+        moveAway = true;
+    }
+
+    public void movedFromCorridor(){
+        moveAway = false;
+    }
+
+    public boolean moveFromCorridor(){
+        return moveAway;
+    }
+
+
+
+    public void getBackToPlanPosition(){
+        synchronized (this.plan){
+            for(Command c: BackToPlan){
+                this.plan.addFirst(c);
+            }
+        }
+    }
+
+    public void goToCorridor(){
+        waitingForCorridor = false;
+        // Get back to the corridor
+        getBackToPlanPosition();
     }
 
     private void addPlan(LinkedList<ai.State> plan) {
@@ -76,35 +179,22 @@ public class MAgent extends Agent {
         System.err.println(this+" Hello!");
 
         while (!terminateFlag) {
-            // ai.MAgent will calculate a plan
             if (currentTask != null && agentMsgQueue.isEmpty()) {
-                isWorkingOnPlan = true;
-                System.err.println(this + " I am planning task #"+ currentTask.getTaskId());
-                ai.State s = new ai.State(null);
-                LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
 
-                // Just printing the plans actions
-                System.err.print(this + " My plan: ");
-                for (ai.State state : states) {
-                    System.err.print(state.action+" ");
-                }
-                System.err.println();
-
-                addPlan(states);
-                //currentTask = null; //TODO: After solution is sent to server the supervisor should mark this current task..
-                isWorkingOnPlan = false;
-                System.err.println(this + " Done planning task #"+ currentTask.getTaskId()+". The plan size is "+states.size());
             }
-
-
-            //addPlan(planner.generatePlan(s, new GoalTask(0,0,0)));
-
-            //ai.MAgent loop
-
             handleMessage(getMessage());
         }
-        System.err.println(getAgentId() + " terminated");
+        System.err.println(this + " Goodbye!");
 
+    }
+
+    private void printPlan(LinkedList<ai.State> states) {
+        // Just printing the plans actions
+        System.err.print(this + " My plan: ");
+        for (ai.State state : states) {
+            System.err.print(state.action+" ");
+        }
+        System.err.println();
     }
 
     public void setCurrentTask(GoalTask currentTask) {
@@ -113,7 +203,6 @@ public class MAgent extends Agent {
         }else{
             isWorkingOnPlan = true;
         }
-        //System.err.println("MAgent: " + this.id + "got task" + currentTask.getTaskId() );
         this.currentTask = currentTask;
     }
 
@@ -125,8 +214,9 @@ public class MAgent extends Agent {
     private void handleMessage(Message msg){
         switch (msg.getType()){
             case Task:
+                this.currentTask = (GoalTask) msg.getPayload();
+                generateTaskPlan((GoalTask) msg.getPayload());
                 break;
-
             case Help:
                 //Calc "bid" for help
                 //Return bid
@@ -136,17 +226,53 @@ public class MAgent extends Agent {
                 break;
             case Replan:
                 System.err.println(this + " I was asked to empty my action queue.");
-                this.plan.clear();
+                if (!replanTaskPlan(currentTask)) {
+                    System.err.println(this + " I could not replan :-( So I will ask my friends to help me!");
+                }
                 break;
             case MoveToASafePlace:
                 System.err.println(this + " I was asked to move to a safe place.");
                 isWorkingOnPlan = true;
                 moveToSafePlace((Set<Point>) msg.getPayload());
                 break;
+            case MoveFromCorridor:
+                System.err.println(this + "I was asked to move away from corridor");
+                isWorkingOnPlan = true;
+                moveFromCorridor((Set<Point>) msg.getPayload());
             default:
                 break;
 
         }
+    }
+
+    private void generateTaskPlan(GoalTask task) {
+        isWorkingOnPlan = true;
+        System.err.println(this + " I am planning task #"+task.getTaskId());
+        ai.State s = new ai.State(null);
+        LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
+        if (states == null) {
+            System.err.println(this + " I could not find a plan, so i will try finding a relaxed plan.");
+            states = planner.generatePlan(s,currentTask, true);
+        }
+        printPlan(states);
+
+        addPlan(states);
+        isWorkingOnPlan = false;
+    }
+
+    private boolean replanTaskPlan(GoalTask task) {
+        isWorkingOnPlan = true;
+
+        System.err.println(this + " I am replanning task #"+task.getTaskId());
+        ai.State s = new ai.State(null);
+        LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
+        if (states != null) {
+            this.plan.clear();
+            printPlan(states);
+            addPlan(states);
+            return true;
+        }
+        return false;
     }
 
     public void addSupervisor(Supervisor supervisor) {
