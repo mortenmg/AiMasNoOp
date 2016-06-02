@@ -1,9 +1,8 @@
 package ai;
 
-import junit.framework.Test;
-
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by hvingelby on 4/5/16.
@@ -14,6 +13,9 @@ public class MAgent extends Agent {
 
     private GoalTask currentTask;
     private boolean isWorkingOnPlan;
+    private AgentStatus status;
+
+    private int numberOfStepsToTake;
 
     public boolean commandQueueEmpty() {
         return this.agentMsgQueue.isEmpty();
@@ -21,6 +23,10 @@ public class MAgent extends Agent {
 
     private boolean terminateFlag = false;
     private AStarPlanner planner;
+
+    private boolean waitingForCorridor = false;
+    private int waitingForCorridorNumber;
+    private LinkedList<Command> BackToPlan;
 
     public MAgent(int id, String color, Point position) {
         super(id,color,position);
@@ -34,6 +40,51 @@ public class MAgent extends Agent {
         this.planner = new AStarPlanner(getAgentId());
         this.agentMsgQueue = new LinkedList<>();
         this.plan = new LinkedList<>();
+    }
+
+    private void moveFromCorridor(Set<Point> illegalPoints){
+        MovePlanner movePlanner = new MovePlanner();
+
+        // Create a move task away from the agents own position.
+        MoveTask task = new MoveTask(getPosition(), illegalPoints);
+
+        BackToPlan = new LinkedList<>();
+
+        List<TestState> plan = movePlanner.generatePlan(task);
+        numberOfStepsToTake = plan.size();
+
+        synchronized (this.plan) {
+            for (TestState s : plan) {
+                BackToPlan.add(s.getAction().reverseCommand(s.getAction()));
+                this.plan.addFirst(s.getAction());
+            }
+
+        }
+
+    }
+
+
+    public void WaitForCorridor(int corNumber){
+        waitingForCorridor = true;
+        waitingForCorridorNumber = corNumber;
+    }
+
+    public boolean isWaitingForCorridor(){
+        return waitingForCorridor;
+    }
+
+    public void getBackToPlanPosition(){
+        synchronized (this.plan){
+            for(Command c: BackToPlan){
+                this.plan.addFirst(c);
+            }
+        }
+    }
+
+    public void goToCorridor(){
+        waitingForCorridor = false;
+        // Get back to the corridor
+        getBackToPlanPosition();
     }
 
     private void addPlan(LinkedList<ai.State> plan) {
@@ -109,10 +160,15 @@ public class MAgent extends Agent {
             case Replan:
                 if (!replanTaskPlan(currentTask)) {
                     System.err.println(this + " I could not replan :-( So I will ask my friends to help me!");
+                    status = AgentStatus.WaitingForHelp;
 
                     Point p = Supervisor.getInstance().getLevel().conflictingCellFromMove(this.peekTopCommand(), this);
                     Box boxToMove = Supervisor.getInstance().getLevel().getBoxAtPosition(p);
                     HelperTask task = new HelperTask(getRestOfPlan(), boxToMove.color, boxToMove.id);
+
+                    Set<Point> illegalpositions = new HashSet<Point>();
+                    illegalpositions.add(this.getPosition());
+                    moveFromCorridor(illegalpositions);
 
                     Message helpMsg = new Message(MessageType.NeedHelp, task);
                     helpMsg.setSender(getAgentId());
@@ -124,6 +180,10 @@ public class MAgent extends Agent {
                 isWorkingOnPlan = true;
                 generateMovePlan((Set<Point>) msg.getPayload());
                 break;
+            case MoveFromCorridor:
+                System.err.println(this + "I was asked to move away from corridor");
+                isWorkingOnPlan = true;
+                moveFromCorridor((Set<Point>) msg.getPayload());
             default:
                 break;
 
@@ -147,23 +207,31 @@ public class MAgent extends Agent {
 
     private void generateTaskPlan(HelperTask task) {
         isWorkingOnPlan = true;
-        System.err.println(this+ " I am planning a helper task");
+
+        this.status = AgentStatus.WorkingOnHelperTask;
+        System.err.println(this + " I am planning a helper task");
 
         HelpPlanner planner = new HelpPlanner();
 
-        synchronized (this.plan) {
-            for (TestState s : planner.generatePlan(task)) {
-                this.plan.add(s.getAction());
+        List<TestState> plan = planner.generatePlan(task);
+
+        // Keep trying ;)
+        if(plan == null) {
+            generateTaskPlan(task);
+        } else {
+            synchronized (this.plan) {
+                for (TestState s : plan) {
+                    this.plan.add(s.getAction());
+                }
             }
+
+            isWorkingOnPlan = false;
         }
-
-        isWorkingOnPlan = false;
-
     }
 
     private boolean replanTaskPlan(GoalTask task) {
         isWorkingOnPlan = true;
-
+        System.err.print(this);
         System.err.println(this + " I am replanning task #"+task.getTaskId());
         ai.State s = new ai.State(null);
         LinkedList<ai.State> states = planner.generatePlan(s,currentTask);
@@ -252,5 +320,29 @@ public class MAgent extends Agent {
     public String toString() {
         return "[Agent "+getAgentId()+"]";
     }
+
+    public AgentStatus getStatus() {
+        return status;
+    }
+    public void setStatus(AgentStatus status) {
+        this.status = status;
+    }
+
+    public int getSteps() {
+        return numberOfStepsToTake;
+    }
+
+    public void decrementSteps() {
+        numberOfStepsToTake--;
+    }
+
+
+}
+
+enum AgentStatus{
+    Planning,
+    Working,
+    WaitingForHelp,
+    WorkingOnHelperTask
 
 }

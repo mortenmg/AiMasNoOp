@@ -20,10 +20,13 @@ public class StateWithBox extends TestState {
                 return false;
         }
 
-        //for (MAgent a : Supervisor.getInstance().getAgents()) {
-        //    if (a.getPosition().x == col && a.getPosition().y == row)
-        //        return false;
-        //}
+        for (MAgent a : Supervisor.getInstance().getAgents()) {
+            if (a.getPosition().x == col && a.getPosition().y == row)
+                return false;
+        }
+
+        if (boxPosition.x == col && boxPosition.y == row)
+            return false;
 
         return  Supervisor.getInstance().getLevel().getMap()[row][col].getType()!= CellType.WALL;
     }

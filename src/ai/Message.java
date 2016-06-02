@@ -12,7 +12,8 @@ enum MessageType{
     Terminate,
     Replan,
     MoveToASafePlace,
-    NeedHelp
+    NeedHelp,
+    MoveFromCorridor
 }
 
 public class Message {

@@ -8,6 +8,9 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ai.AgentStatus.WaitingForHelp;
+import static ai.AgentStatus.WorkingOnHelperTask;
+
 /**
  * Created by hvingelby on 4/5/16.
  */
@@ -77,7 +80,7 @@ public class Supervisor extends Thread {
             ArrayList<Command> validCommands = getValidActions(); //Internal map is also updated!
 
             if (debugging) {
-                System.out.println(validCommands);
+                //System.out.println(validCommands);
                 level.updateToFuture();
             } else {
                 if( sendActions(validCommands) ) {
@@ -189,7 +192,17 @@ public class Supervisor extends Thread {
 
         for (MAgent a: agents){
             Command c = a.peekTopCommand();
-            if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
+
+            /*
+            switch (a.getStatus()){
+                case WaitingForHelp:
+
+                    break;
+            }
+            */
+            if (a.getStatus() == WaitingForHelp && a.getSteps()==0){
+                cmds.add(a.getAgentId(),null);
+            } else if (c == null && a.getCurrentTask()!=null && !a.isWorkingOnPlan()) { // The agent is done calculating plan and supervisor has received all actions
                 GoalTask g = a.getCurrentTask();
                 this.goalTasks.remove(g);
                 a.setCurrentTask(null);
@@ -197,6 +210,7 @@ public class Supervisor extends Thread {
                 System.err.println("[Supervisor] I have received all actions from agent "+a.getAgentId());
             } else if ((p = level.conflictingCellFromMove(c, a)) == null){ // The move is valid
                 cmds.add(a.getAgentId(),a.pollCommand());
+                a.decrementSteps();
             } else {
                 handleInvalidMove(p, a);
                 cmds.add(a.getAgentId(),null);
@@ -218,7 +232,8 @@ public class Supervisor extends Thread {
             Box b;
             MAgent otherAgent;
             if ((b = level.getBoxAtPosition(p)) != null){ // There is a box in the way.
-                a.postMsg(new Message(MessageType.Replan));
+                if (a.getStatus() != WaitingForHelp)
+                    a.postMsg(new Message(MessageType.Replan));
             } else if ((otherAgent = this.getAgentFromPoint(p)) != null){ // There is an agent in the way
                 if (otherAgent.commandQueueEmpty() && !otherAgent.isWorkingOnPlan()) { // The other agent is not doing anything
                     otherAgent.postMsg(new Message(MessageType.MoveToASafePlace, a.getRestOfPlan()));

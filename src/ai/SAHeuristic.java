@@ -30,6 +30,7 @@ public class SAHeuristic implements Comparator<SAState> {
             //Point goalPos = Supervisor.getInstance().getLevel().getGoals().get(gt.getGoalId()).point;
             Point boxPos = n.getBoxWithIdPos(gt.getBoxId());
             h += Supervisor.getInstance().getLevel().getCostForCoordinateWithGoal(boxPos.x,boxPos.y, gt.getGoalId());
+            h += SimpleHeuristic.euclidean(n.agentCol, n.agentRow, boxPos.x, boxPos.y);
             //h += SimpleHeuristic.euclidean(goalPos.x, goalPos.y, boxPos.x, boxPos.y);
         }
         return h;

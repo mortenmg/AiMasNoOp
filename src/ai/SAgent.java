@@ -23,8 +23,8 @@ public class SAgent extends Agent {
         //Single agent loop!
         LinkedList<SAState> states = planner.generatePlan();
 
-        System.err.println("Single-Agent found plan");
         // Just printing the plans actions
+        System.err.println(this+ " My plan is length: "+states.size());
         System.err.print(this + " My plan: ");
         for (SAState state : states) {
             System.err.print(state.action+" ");

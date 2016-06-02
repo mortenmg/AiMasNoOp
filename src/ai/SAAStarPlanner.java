@@ -95,6 +95,7 @@ public class SAAStarPlanner {
             SAState leafNode = getAndRemoveLeaf();
 
             if ( leafNode.isGoalState() ) {
+                System.err.println( searchStatus() );
                 return leafNode.extractPlan();
             }
 
