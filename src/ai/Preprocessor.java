@@ -188,7 +188,7 @@ public class Preprocessor {
         //printCorridorMap();
 
         createGraphFromMap();
-        findCosts();
+        findCosts(agents.size() == 1);
         findCorridors();
         //getGoalTasks();  //Called from supervisor
 
@@ -216,7 +216,7 @@ public class Preprocessor {
         return agents;
     }
 
-    private void findCosts() {
+    private void findCosts(boolean singleAgent) {
         ArrayList<Node> allNodes = new ArrayList<>();
 
         for (ArrayList<Node> ls:graph) {
@@ -229,6 +229,12 @@ public class Preprocessor {
             Node n = graph.get(g.point.y).get(g.point.x);
             GraphToolkit.dijkstra(allNodes,n);
             System.err.println("dikjstra: "+ n.getId());
+        }
+
+        if(singleAgent){
+            Point agentPos = agents.get(0).getPosition();
+            Node n = graph.get(agentPos.y).get(agentPos.x);
+            GraphToolkit.dijkstra(allNodes,n);
         }
     }
 
@@ -298,6 +304,10 @@ public class Preprocessor {
             System.err.println("GoalTasks - Task " + gt.getTaskId() + " " +
                     "Goal: (" + g.id +","+ g.letter + ") BoxID: (" + b.id + "," + b.letter +")" +
                     "TaskWeight: " + gt.getWeight() + " TaskCost: " + gt.getCost());
+        }
+
+        if(agents.size() == 1){
+
         }
 
 //        for (GoalTask gt: goalTasks) {
@@ -491,6 +501,10 @@ public class Preprocessor {
                 if (this.map[y][x].getType() == CellType.GOAL){
                     n.setId(this.map[y][x].getGoalId());
                 }
+                if(agents.size() == 1) //Used for single agent case!
+                    if(agents.get(0).getPosition().x == x && agents.get(0).getPosition().y == y)
+                        n.setId(99); //Unique for singleAgent
+
                 graph.get(y).add(n); //Add to graph
             }
         }

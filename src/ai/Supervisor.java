@@ -45,6 +45,17 @@ public class Supervisor extends Thread {
         Supervisor.getInstance().start();
     }
 
+    public boolean isGoalFulfilledForBox(Point boxPos, int boxId){
+        for(GoalTask gt: getGoalTasks()){
+            if(gt.getBoxId() == boxId){
+                Goal g = level.getGoalWithId(gt.getGoalId());
+                if(g.point.equals(boxPos))
+                    return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Supervisor main loop
@@ -252,12 +263,19 @@ public class Supervisor extends Thread {
 
     public void setAgents(List<Agent> agents) {
         if(agents.size() == 1){
-            singleAgent = new SAgent(agents.get(0));
+
+            singleAgent = new SAgent(agents.get(0),true); //TODO: Make this variable of size of map or some other parameters
         }else{
             for(Agent a: agents){
                 this.agents.add(new MAgent(a));
             }
         }
+    }
+
+    private boolean chooseSingleAgentType() {
+        if(level.getMap().length > 30 && level.getMap()[0].length > 30)
+            return true;
+        return true;
     }
 
     public void setGoalTasks(PriorityQueue<GoalTask> goalTasks) {
