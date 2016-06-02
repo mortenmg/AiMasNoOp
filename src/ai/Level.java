@@ -56,14 +56,20 @@ public class Level {
 
                     Point newAgentPos = new Point(newAgentCol,newAgentRow);
 
+                    if(isCorridor(a.getLastPosition()) && !isCorridor(a.getPosition())){
+                        unlockCorridor(a.getPosition(),a.getAgentId());
+                    }
+
                     if (isCellFree(newAgentCol, newAgentRow) && !isCorridor(newAgentPos)) {
 
                         // Left corridor unlock it
+                        /*
                         if(isCorridor(a.getPosition())){
                             unlockCorridor(a.getPosition(),a.getAgentId());
-                        }
+                        }*/
 
                         conflictingCell = null;
+                        a.setLastPosition(a.getPosition());
                         updateFutureAgent(a, newAgentPos);
 
 
@@ -71,6 +77,7 @@ public class Level {
 
                         if(controlCorridor(newAgentPos, a.getAgentId())){
                             conflictingCell = null;
+                            a.setLastPosition(a.getPosition());
                             updateFutureAgent(a,newAgentPos);
 
                         }else {
@@ -93,7 +100,7 @@ public class Level {
                     break;
 
                 case Pull:
-                    int boxRow = a.getPosition().y + dirToRowChange(c.dir2); //Supposed box position
+                    int boxRow = a.getPospition().y + dirToRowChange(c.dir2); //Supposed box position
                     int boxCol = a.getPosition().x + dirToColChange(c.dir2);
 
                     int newAgentRowPull = a.getPosition().y + dirToRowChange(c.dir1);
@@ -152,11 +159,17 @@ public class Level {
                         if (b2.color == a.getColor()) { //Check if agent can move the box
                             if (isCellFree(newBoxCol, newBoxRow) && !isCorridor(newBoxLocationPush)) {
 
+                                /*
+                                if(isCorridor(a.getLastPosition()) && !isCorridor(a.getPosition())){
+                                    unlockCorridor(a.getLastPosition(),a.getAgentId());
+                                }*/
+
                                 if(isCorridor(boxPointPush)){
                                     unlockCorridor(boxPointPush,a.getAgentId());
                                 }
 
                                 conflictingCell = null;
+                                //a.setLastPosition(a.getPosition());
                                 updateFutureAgent(a, boxPointPush); //Update agent position to where box were
                                 updateFutureBox(b2, newBoxLocationPush);
 
@@ -164,6 +177,7 @@ public class Level {
 
                                 if(controlCorridor(newBoxLocationPush, a.getAgentId())){
                                     conflictingCell = null;
+                                   // a.setLastPosition(a.getPosition());
                                     updateFutureAgent(a, boxPointPush); //Update agent position to where box were
                                     updateFutureBox(b2, newBoxLocationPush);
                                 } else{

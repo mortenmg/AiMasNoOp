@@ -182,7 +182,7 @@ public class Preprocessor {
         level.setFutureAgents(futureAgents);
 
         findCorridors(); // First find the corridors in the map
-        level.setCorridors(corridors);
+        level.setCorridors(flipHashMap(corridors));
         level.setCorridorLocks(corridorLocks);
 
         //printCorridorMap();
@@ -426,6 +426,23 @@ public class Preprocessor {
 //            cor[row][col] = id-47; // 48 i stedet? for 0-indeksering? :)
 //            return true;
 //        }
+    }
+
+    private HashMap<Point, Integer> flipHashMap(HashMap<Point, Integer> hash){
+        HashMap<Point, Integer> flipped = new HashMap<>();
+
+        Set flipThis = (Set) hash.entrySet();
+        Iterator flipIterator = flipThis.iterator();
+        Point flipPoint;
+
+        while (flipIterator.hasNext()){
+            Map.Entry mapEntry = (Map.Entry) flipIterator.next();
+            flipPoint = (Point) mapEntry.getKey();
+            flipped.put(new Point(flipPoint.y,flipPoint.x),(Integer) mapEntry.getValue());
+        }
+
+        return flipped;
+
     }
 
     // Their value aee initially set to false
